@@ -4,14 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>MOTOR FX v2 — sonido de motor por pulsos de combustión</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#0A0908; --face:#14120F; --ivory:#E9DFC8; --ivory-dim:#8C857A;
   --amber:#F0A22E; --amber-deep:#8A5A12; --red:#D9411E; --line:#2C2822;
-  --disp:'Barlow Condensed','Arial Narrow',Impact,system-ui,sans-serif;
+  --disp:'Arial Narrow','Helvetica Neue Condensed',Impact,Haettenschweiler,'DejaVu Sans Condensed',Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--ink)}
@@ -146,7 +143,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid #0F0
         </div>
       </div>
       <div class="row" id="manualRow" hidden><label for="mspd">Velocidad</label>
-        <input type="range" id="mspd" min="0" max="180" value="0"><span class="val" id="mspdVal">0</span></div>
+        <input type="range" id="mspd" min="0" max="260" value="0"><span class="val" id="mspdVal">0</span></div>
     </div>
 
     <div id="status">Pulsa <b>ARRANCAR</b> para activar el audio.</div>
@@ -181,7 +178,7 @@ const ENGINES = [
   { id:'v8x', code:'V8', desc:'Cigüeñal cruzado — muscle car', fire:FIRE.v8cross,
     idle:720, redline:6400, pipe:[58,67], fb:.74, damp:.28, decay:.0042, drive:2.6, tone:2600, intake:.10, bark:1.15 },
   { id:'v8cam', code:'V8 CAM', desc:'Leva radical — ralentí lopeado', fire:FIRE.v8cross,
-    idle:1000, redline:7200, pipe:[54,63], fb:.68, damp:.28, decay:.0050, drive:3.0, tone:3100, intake:.19, bark:1.35, cam:1 },
+    idle:1000, redline:7200, pipe:[54,63], fb:.68, damp:.28, decay:.0050, drive:3.0, tone:3100, intake:.19, bark:1.35, cam:1, pop:.03 },
   { id:'v8f', code:'V8 F', desc:'Cigüeñal plano — superdeportivo', fire:FIRE.v8flat,
     idle:950, redline:8000, pipe:[104,119], fb:.68, damp:.42, decay:.0026, drive:3.1, tone:4600, intake:.09, bark:1.0 },
   { id:'v12', code:'V12', desc:'Aullido de doce cilindros', fire:FIRE.v12,
@@ -222,7 +219,8 @@ class EngineCore{
   setEngine(e){
     this.e=e;
     this.fire = e.fire || [[0,0]];
-    this.len=[ Math.max(24,(this.sr/(e.pipe?e.pipe[0]:90))|0), Math.max(24,(this.sr/(e.pipe?e.pipe[1]:90))|0) ];
+    this.len=[ Math.max(16,(this.sr/(2*(e.pipe?e.pipe[0]:90)))|0), Math.max(16,(this.sr/(2*(e.pipe?e.pipe[1]:90)))|0) ];
+    this.off=[1,1];
     this.dl[0].fill(0); this.dl[1].fill(0); this.lp=[0,0];
   }
   set(p){
@@ -274,9 +272,10 @@ class EngineCore{
           this.camSlow=cam*0.55*low*(charge<0.6?1.8:1);
         }
         this.env[b]=1; this.amp[b]=load*jitter*(e.bark||1)*charge;
+        this.off[b]=1+((this.fi%5)-2)*0.035;   // tubo primario de cada cilindro
         // petardeo en retención: se acumula combustible sin quemar
-        if(this.thr<0.10 && this.rpm>2500 && Math.random()<0.07){
-          this.amp[b]*= 2.4+Math.random()*2.2; this.pops=1;
+        if(this.thr<0.10 && this.rpm>3300 && Math.random()<(e.pop!==undefined?e.pop:0.015)){
+          this.amp[b]*= 1.6+Math.random()*1.1; this.pops=1;
         }
         this.fi++;
       }
@@ -290,10 +289,10 @@ class EngineCore{
         const ex=this.env[b]*this.amp[b]*(0.42+0.58*(Math.random()*2-1));
         // --- colector + escape: línea de retardo realimentada ---
         const L=this.len[b];
-        let r=this.dw[b]-L; if(r<0) r+=8192;
+        let r=this.dw[b]-((L*this.off[b])|0); if(r<0) r+=8192;
         const d=this.dl[b][r];
         this.lp[b]+= (d-this.lp[b])*damp;
-        const y=ex + fb*this.lp[b];
+        const y=ex - fb*this.lp[b];
         this.dl[b][this.dw[b]]=y;
         this.dw[b]=(this.dw[b]+1)&8191;
         sum+=y;
@@ -367,10 +366,10 @@ class EngineProcessor extends AudioWorkletProcessor{
 registerProcessor('engine-core',EngineProcessor);`;
 
 /* ================= estado ================= */
-const GEAR_TOP=[52,88,128,172,214,260], UP=.93, DOWN=.33;
+const GEAR_TOP=[45,78,112,148,186,222,260], UP=.93;
 const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevSpeed:0,
   rpm:800, targetRpm:800, throttle:0, revHold:false, gear:1, shiftT:0,
-  vol:.7, esc:.55, watchId:null, lastT:0 };
+  vol:.7, esc:.55, watchId:null, lastT:0, blipT:0, lockT:0 };
 
 let ctx=null, node=null, outGain=null, core=null, useWorklet=false, lopeP=0;
 
@@ -415,6 +414,8 @@ function physics(dt){
   const accel=(S.speed-S.prevSpeed)/Math.max(dt,.001);
   S.prevSpeed=S.speed;
   if(S.shiftT>0) S.shiftT-=dt;
+  if(S.blipT>0) S.blipT-=dt;
+  if(S.lockT>0) S.lockT-=dt;
 
   const stopped=S.speed<3;
   let thr;
@@ -429,18 +430,39 @@ function physics(dt){
     }
     else { S.targetRpm=e.whine?400:e.idle; thr=.04; }
   }else{
-    let pos=S.speed/GEAR_TOP[S.gear-1];
-    if(pos>UP && S.gear<GEAR_TOP.length){ S.gear++; S.shiftT=.28; }
-    else if(S.gear>1 && pos<DOWN){ S.gear--; S.shiftT=.15; }
-    pos=S.speed/GEAR_TOP[S.gear-1];
+    // Vueltas que daría el motor en una marcha dada, como fracción del corte.
+    const rev = g => Math.min(1, S.speed/GEAR_TOP[g-1]);
+    const braking = -accel;                       // km/h por segundo al frenar
+    if(S.lockT<=0){
+      if(rev(S.gear)>UP && S.gear<GEAR_TOP.length){
+        S.gear++; S.shiftT=.28; S.lockT=.50;
+      } else if(S.gear>1){
+        // Cuanto más fuerte frenas, antes reduce: así retiene el motor.
+        // Al soltar el pie y dejarse rodar, la caja se vuelve perezosa.
+        const punto = braking>14 ? .58 : (braking>4 ? .46 : .36);
+        const abajo = rev(S.gear-1);
+        if(rev(S.gear)<punto && abajo<.88){
+          S.gear--; S.blipT=.38; S.lockT = braking>14 ? .32 : .58;
+        } else if(S.throttle>.70 && rev(S.gear)<.55 && abajo<.90){
+          S.gear--; S.blipT=.30; S.lockT=.50;     // patada abajo al pisar
+        }
+      }
+    }
+    const pos=rev(S.gear);
     const idleF=(e.whine?400:e.idle)/e.redline;
     S.targetRpm=Math.min(e.redline, e.redline*Math.max(idleF,pos));
     thr=Math.max(0,Math.min(1,.16+accel/9));
     if(accel<-1.5) thr=0;              // retención: se corta el gas
     if(S.revHold) thr=1;
-    if(S.shiftT>0) thr*=.15;
+    if(S.shiftT>0) thr*=.15;           // al subir, corte de gas
+    if(S.blipT>0){                     // al reducir, punta-tacón
+      // el pie derecho pisa mientras el izquierdo frena: las vueltas suben
+      // por encima del punto de acople y caen sobre él, sin tirón
+      thr=Math.max(thr,.82);
+      S.targetRpm=Math.min(e.redline, S.targetRpm*(1+.11*Math.min(1,S.blipT/.24)));
+    }
   }
-  const rate=(e.cam&&stopped&&!S.revHold)?9:(S.targetRpm>S.rpm?7:4.5);
+  const rate=S.blipT>0?15:((e.cam&&stopped&&!S.revHold)?9:(S.targetRpm>S.rpm?7:4.5));
   S.rpm += (S.targetRpm-S.rpm)*Math.min(1,dt*rate);
   S.throttle += (thr-S.throttle)*Math.min(1,dt*8);
 }
