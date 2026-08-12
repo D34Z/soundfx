@@ -404,7 +404,7 @@ class EngineProcessor extends AudioWorkletProcessor{
 registerProcessor('engine-core',EngineProcessor);`;
 
 /* ================= estado ================= */
-const GEAR_TOP=[45,78,112,148,186,222,260], UP=.93;
+const GEAR_TOP=[45,78,112,148,186,222,260];
 const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevSpeed:0,
   rpm:800, targetRpm:800, throttle:0, revHold:false, gear:1, shiftT:0,
   vol:.7, esc:.55, watchId:null, lastT:0, blipT:0, lockT:0,
@@ -487,7 +487,17 @@ function physics(dt){
     const rev = g => Math.min(1, S.speed/GEAR_TOP[g-1]);
     const braking = -accel;                       // km/h por segundo al frenar
     if(S.lockT<=0){
-      if(rev(S.gear)>UP && S.gear<GEAR_TOP.length){
+      // Cuánto estira la marcha depende de con qué ganas aceleras. A tope la
+      // lleva al corte; en crucero cambia pronto para dejar el motor abajo.
+      // El segundo guardia evita que suba a una marcha donde se quedaría
+      // ahogada, que es lo que provocaría el sube-y-baja continuo.
+      const sube = S.revHold ? .97
+                 : (accel>12 ? .97 : (accel>5 ? .90 : (accel>1 ? .78 : .62)));
+      // Una caja real no sube de marcha mientras frenas, y menos aún en mitad
+      // del taloneo: la marcha que acaba de entrar deja el motor alto, y sin
+      // este guardia la vuelve a soltar inmediatamente.
+      if(S.gear<GEAR_TOP.length && accel>-1 && S.blipT<=0
+         && rev(S.gear)>sube && rev(S.gear+1)>.42){
         S.gear++; S.shiftT=.28; S.lockT=.50;
       } else if(S.gear>1){
         // Cuanto más fuerte frenas, antes reduce: así retiene el motor.
