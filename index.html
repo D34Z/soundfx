@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>MOTOR FX v2 — sonido de motor por pulsos de combustión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A0908; --face:#14120F; --ivory:#E9DFC8; --ivory-dim:#8C857A;
+  --amber:#F0A22E; --amber-deep:#8A5A12; --red:#D9411E; --line:#2C2822;
+  --disp:'Barlow Condensed','Arial Narrow',Impact,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--ink)}
+body{font-family:var(--disp);color:var(--ivory);user-select:none;-webkit-user-select:none;
+  touch-action:manipulation;
+  background:radial-gradient(120% 90% at 50% 0%, #17140F 0%, #0A0908 62%),var(--ink)}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+
+#shift{display:flex;gap:4px;justify-content:center;align-items:center;padding:8px 10px 6px;height:32px}
+.led{flex:0 1 34px;height:9px;border-radius:2px;background:#1A1714;border:1px solid #241F19;
+  transition:background .05s linear,box-shadow .05s linear}
+.led.on{background:var(--amber);border-color:var(--amber);box-shadow:0 0 10px rgba(240,162,46,.65)}
+.led.red{background:var(--red);border-color:var(--red);box-shadow:0 0 12px rgba(217,65,30,.7)}
+.led.blink{background:#fff;border-color:#fff;box-shadow:0 0 16px rgba(255,255,255,.8)}
+
+#app{display:flex;height:calc(100% - 32px);gap:14px;padding:0 14px 12px}
+#left{flex:1 1 52%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+#right{flex:1 1 48%;display:flex;flex-direction:column;gap:10px;min-width:0;padding-top:4px}
+
+#gaugeWrap{width:100%;max-width:min(46vh,420px);position:relative}
+svg{width:100%;height:auto;display:block}
+.tick{stroke:var(--ivory);stroke-linecap:butt}
+.tick.minor{stroke:#6E675C}
+.num{fill:var(--ivory);font-family:var(--disp);font-weight:600;text-anchor:middle;dominant-baseline:central}
+.lbl{fill:var(--ivory-dim);font-family:var(--disp);letter-spacing:.22em;text-anchor:middle;font-weight:500}
+#readout{position:absolute;left:0;right:0;top:57%;text-align:center;pointer-events:none}
+#speed{font-size:clamp(44px,11vh,86px);font-weight:700;line-height:.85;letter-spacing:-.02em}
+#speedUnit{font-size:.9rem;letter-spacing:.28em;color:var(--ivory-dim);margin-top:4px}
+#gearBox{margin-top:6px;font-size:1.5rem;color:var(--amber);letter-spacing:.1em}
+
+.panel{border:1px solid var(--line);border-radius:4px;background:linear-gradient(180deg,#141210,#0E0C0A)}
+.panelHead{font-size:.72rem;letter-spacing:.26em;color:var(--ivory-dim);padding:7px 10px;
+  border-bottom:1px solid var(--line);text-transform:uppercase}
+#engines{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.eng{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;padding:9px 11px;border-bottom:1px solid #1B1814}
+.eng:last-child{border-bottom:none}
+.eng .code{font-weight:700;font-size:1.05rem;letter-spacing:.04em;min-width:56px}
+.eng .desc{font-size:.82rem;color:var(--ivory-dim)}
+.eng[aria-pressed="true"]{background:linear-gradient(90deg,rgba(240,162,46,.16),transparent 70%);box-shadow:inset 3px 0 0 var(--amber)}
+.eng[aria-pressed="true"] .code{color:var(--amber)}
+
+#buttons{display:flex;gap:10px}
+.big{flex:1;border:1px solid var(--line);border-radius:4px;padding:14px 8px;font-weight:700;
+  font-size:1.25rem;letter-spacing:.16em;background:linear-gradient(180deg,#191612,#0F0D0B)}
+#power[data-on="true"]{color:var(--amber);border-color:var(--amber-deep);background:linear-gradient(180deg,#2A1D0A,#140E06)}
+#rev{color:var(--red);border-color:#43201A}
+#rev.active{background:linear-gradient(180deg,#3A140C,#1A0906);box-shadow:0 0 18px rgba(217,65,30,.35) inset}
+
+.row{display:flex;align-items:center;gap:10px;padding:8px 11px}
+.row label{font-size:.72rem;letter-spacing:.2em;color:var(--ivory-dim);min-width:80px;text-transform:uppercase}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:22px;background:none}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:#332E26}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-9px;
+  border-radius:50%;background:var(--ivory);border:3px solid #0F0D0B}
+input[type=range]::-moz-range-track{height:2px;background:#332E26}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid #0F0D0B;border-radius:50%;background:var(--ivory)}
+.val{font-size:1rem;min-width:46px;text-align:right}
+.seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{flex:1;padding:9px 4px;font-size:.75rem;letter-spacing:.14em;color:var(--ivory-dim);text-transform:uppercase}
+.seg button[aria-pressed="true"]{background:rgba(240,162,46,.14);color:var(--amber)}
+#status{font-size:.74rem;color:var(--ivory-dim);letter-spacing:.05em;padding:0 2px;line-height:1.35;min-height:2.4em}
+#status b{color:var(--amber);font-weight:600}
+#diag{font-size:.68rem;color:#6E675C;letter-spacing:.02em;line-height:1.35;padding:0 2px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-word;max-height:4.2em;overflow:auto}
+
+@media (max-aspect-ratio: 1/1){
+  #app{flex-direction:column;overflow-y:auto}
+  #left{flex:0 0 auto;padding:4px 0}
+  #gaugeWrap{max-width:min(60vw,320px)}
+  #right{flex:0 0 auto}
+  #engines{max-height:150px}
+}
+</style>
+</head>
+<body>
+
+<div id="shift" aria-hidden="true"></div>
+
+<div id="app">
+  <div id="left">
+    <div id="gaugeWrap">
+      <svg viewBox="0 0 400 400" id="gauge" aria-label="Cuentavueltas">
+        <defs>
+          <radialGradient id="face" cx="50%" cy="42%" r="62%">
+            <stop offset="0%" stop-color="#1E1B16"/><stop offset="100%" stop-color="#0C0B09"/>
+          </radialGradient>
+          <linearGradient id="ndl" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#F26647"/><stop offset="100%" stop-color="#B32E13"/>
+          </linearGradient>
+        </defs>
+        <circle cx="200" cy="200" r="192" fill="url(#face)" stroke="#221E19" stroke-width="2"/>
+        <circle cx="200" cy="200" r="176" fill="none" stroke="#1B1814" stroke-width="1"/>
+        <path id="arcBg" fill="none" stroke="#221E19" stroke-width="9"/>
+        <path id="arcRed" fill="none" stroke="#4A1810" stroke-width="9"/>
+        <path id="arcVal" fill="none" stroke="#F0A22E" stroke-width="9"/>
+        <g id="ticks"></g>
+        <text class="lbl" x="200" y="118" font-size="13">x1000 r/min</text>
+        <g id="needle">
+          <path d="M200 46 L205 200 L195 200 Z" fill="url(#ndl)"/>
+          <circle cx="200" cy="200" r="13" fill="#100E0C" stroke="#3A342B" stroke-width="2"/>
+          <circle cx="200" cy="200" r="4" fill="#E9DFC8"/>
+        </g>
+      </svg>
+      <div id="readout">
+        <div id="speed">0</div><div id="speedUnit">km/h</div><div id="gearBox">N</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="right">
+    <div id="buttons">
+      <button class="big" id="power" data-on="false">ARRANCAR</button>
+      <button class="big" id="rev">ACELERAR</button>
+    </div>
+
+    <div class="panel" style="flex:1 1 auto;display:flex;flex-direction:column;min-height:110px">
+      <div class="panelHead">Motor</div>
+      <div id="engines" role="group" aria-label="Selección de motor"></div>
+    </div>
+
+    <div class="panel">
+      <div class="row"><label for="vol">Volumen</label>
+        <input type="range" id="vol" min="0" max="100" value="70"><span class="val" id="volVal">70</span></div>
+      <div class="row"><label for="esc">Escape</label>
+        <input type="range" id="esc" min="0" max="100" value="55"><span class="val" id="escVal">55</span></div>
+      <div class="row" style="padding-top:2px">
+        <button id="test" class="seg" style="flex:0 0 auto;padding:8px 12px;font-size:.75rem;letter-spacing:.14em">PITIDO</button>
+        <div class="seg" style="flex:1">
+          <button id="mGps" aria-pressed="true">GPS</button>
+          <button id="mManual" aria-pressed="false">Manual</button>
+        </div>
+      </div>
+      <div class="row" id="manualRow" hidden><label for="mspd">Velocidad</label>
+        <input type="range" id="mspd" min="0" max="180" value="0"><span class="val" id="mspdVal">0</span></div>
+    </div>
+
+    <div id="status">Pulsa <b>ARRANCAR</b> para activar el audio.</div>
+    <div id="diag"></div>
+  </div>
+</div>
+
+<script>
+/* ===========================================================
+   MOTOR FX v2
+   Síntesis física: cada cilindro dispara un pulso de combustión
+   en su ángulo real del ciclo de 720°, y ese pulso entra en una
+   línea de retardo que hace de colector + escape. El timbre sale
+   de la geometría del motor, no de una suma de osciladores.
+   =========================================================== */
+
+const MAX_RPM = 8000;
+
+/* --- tablas de encendido: [ángulo del ciclo 0-720, banco] --- */
+function evenV(n){ const a=[]; for(let i=0;i<n;i++) a.push([i*720/n, i%2]); return a; }
+const FIRE = {
+  // orden 1-8-4-3-6-5-7-2: cada banco recibe intervalos desiguales -> ese es el rumble
+  v8cross: [[0,0],[90,1],[180,1],[270,0],[360,1],[450,0],[540,0],[630,1]],
+  v8flat:  [[0,0],[90,1],[180,0],[270,1],[360,0],[450,1],[540,0],[630,1]],
+  v12: evenV(12), v10: evenV(10), v6: evenV(6),
+  i4:  [[0,0],[180,0],[360,0],[540,0]],
+  boxer:[[0,0],[180,1],[360,0],[540,1]],   // colectores de distinta longitud
+  i6:  [[0,0],[120,0],[240,0],[360,0],[480,0],[600,0]],
+};
+
+const ENGINES = [
+  { id:'v8x', code:'V8', desc:'Cigüeñal cruzado — muscle car', fire:FIRE.v8cross,
+    idle:720, redline:6400, pipe:[58,67], fb:.74, damp:.28, decay:.0042, drive:2.6, tone:2600, intake:.10, bark:1.15 },
+  { id:'v8cam', code:'V8 CAM', desc:'Leva radical — ralentí lopeado', fire:FIRE.v8cross,
+    idle:1000, redline:7200, pipe:[54,63], fb:.68, damp:.28, decay:.0050, drive:3.0, tone:3100, intake:.19, bark:1.35, cam:1 },
+  { id:'v8f', code:'V8 F', desc:'Cigüeñal plano — superdeportivo', fire:FIRE.v8flat,
+    idle:950, redline:8000, pipe:[104,119], fb:.68, damp:.42, decay:.0026, drive:3.1, tone:4600, intake:.09, bark:1.0 },
+  { id:'v12', code:'V12', desc:'Aullido de doce cilindros', fire:FIRE.v12,
+    idle:1000, redline:8000, pipe:[132,148], fb:.63, damp:.5, decay:.0019, drive:2.2, tone:5600, intake:.07, bark:.85 },
+  { id:'v10', code:'V10', desc:'Grito metálico de diez', fire:FIRE.v10,
+    idle:900, redline:8000, pipe:[118,131], fb:.66, damp:.46, decay:.0021, drive:2.9, tone:5000, intake:.08, bark:.95 },
+  { id:'v6',  code:'V6',  desc:'Seis cilindros aspirado', fire:FIRE.v6,
+    idle:780, redline:6800, pipe:[86,97], fb:.7, damp:.36, decay:.0032, drive:2.3, tone:3200, intake:.11, bark:.95 },
+  { id:'i6',  code:'6L',  desc:'Seis en línea — suave y grave', fire:FIRE.i6,
+    idle:700, redline:7000, pipe:[76,76], fb:.72, damp:.34, decay:.0030, drive:2.0, tone:3000, intake:.09, bark:.8 },
+  { id:'i4t', code:'4T',  desc:'Cuatro cilindros turbo', fire:FIRE.i4,
+    idle:850, redline:7000, pipe:[92,92], fb:.69, damp:.38, decay:.0030, drive:2.7, tone:3000, intake:.14, bark:1.0, turbo:1 },
+  { id:'bxr', code:'BOXER', desc:'Bóxer de colectores desiguales', fire:FIRE.boxer,
+    idle:800, redline:7200, pipe:[64,101], fb:.75, damp:.3, decay:.0038, drive:2.5, tone:2700, intake:.13, bark:1.1 },
+  { id:'ev',  code:'EV+', desc:'Silbido eléctrico reforzado', whine:1,
+    idle:0, redline:8000, base:130, ratio:2.4, tone:6000, intake:.05 },
+  { id:'jet', code:'JET', desc:'Turbina de reactor', whine:1, turbine:1,
+    idle:0, redline:8000, base:80, ratio:1.7, tone:7000, intake:.5 },
+];
+
+/* ===========================================================
+   NÚCLEO DSP — se usa igual dentro del AudioWorklet y en el
+   ScriptProcessor de reserva, por eso vive en una cadena.
+   =========================================================== */
+class EngineCore{
+  constructor(sr){
+    this.sr=sr; this.phase=0; this.fi=0;
+    this.rpm=0; this.rpmT=800; this.thr=0; this.thrT=0; this.gain=0; this.gainT=0;
+    this.spd=0; this.esc=.55; this.limiter=0;
+    this.dl=[new Float32Array(8192),new Float32Array(8192)];
+    this.dw=[0,0]; this.lp=[0,0]; this.env=[0,0]; this.amp=[0,0];
+    this.dc=0; this.dcx=0; this.tone=0; this.tone2=0; this.wp=0; this.wp2=0;
+    this.pops=0; this.lope=0; this.camSlow=0;
+    this.cyl=new Float32Array(16).fill(1);
+    this.setEngine({fire:[[0,0],[180,0],[360,0],[540,0]],idle:800,redline:7000,
+      pipe:[90,90],fb:.7,damp:.4,decay:.003,drive:2.5,tone:3000,intake:.1,bark:1});
+  }
+  setEngine(e){
+    this.e=e;
+    this.fire = e.fire || [[0,0]];
+    this.len=[ Math.max(24,(this.sr/(e.pipe?e.pipe[0]:90))|0), Math.max(24,(this.sr/(e.pipe?e.pipe[1]:90))|0) ];
+    this.dl[0].fill(0); this.dl[1].fill(0); this.lp=[0,0];
+  }
+  set(p){
+    if(p.rpm!==undefined) this.rpmT=p.rpm;
+    if(p.thr!==undefined) this.thrT=p.thr;
+    if(p.gain!==undefined) this.gainT=p.gain;
+    if(p.spd!==undefined) this.spd=p.spd;
+    if(p.esc!==undefined) this.esc=p.esc;
+    if(p.engine) this.setEngine(p.engine);
+  }
+  render(out){
+    const e=this.e, sr=this.sr, n=out.length;
+    const glide=1-Math.exp(-1/(sr*0.035));   // suavizado de parámetros
+    if(e.whine){ return this.renderWhine(out,glide); }
+
+    const decayBase=e.decay, fb=e.fb*(0.55+this.esc*0.8), damp=e.damp;
+    const drive=e.drive*(0.7+this.esc*0.7);
+    const nf=this.fire.length, cam=e.cam||0;
+
+    for(let i=0;i<n;i++){
+      this.rpm += (this.rpmT-this.rpm)*glide;
+      this.thr += (this.thrT-this.thr)*glide;
+      this.gain += (this.gainT-this.gain)*glide;
+
+      // --- avance del cigüeñal y disparo de cilindros ---
+      const dps=this.rpm*6/sr;             // grados por muestra
+      this.phase+=dps;
+      if(this.phase>=720){
+        this.phase-=720; this.fi=0;
+        if(cam>0) for(let k=0;k<nf;k++){
+          this.cyl[k]=Math.max(.14,Math.min(1.9, this.cyl[k]*0.80+0.20+(Math.random()-0.5)*1.15*cam));
+        }
+      }
+      while(this.fi<nf && this.phase>=this.fire[this.fi][0]){
+        const b=this.fire[this.fi][1];
+        const load=0.25+this.thr*1.05;
+        // dispersión ciclo a ciclo: ningún motor quema igual dos veces
+        const jitter=0.82+Math.random()*0.36;
+        // leva radical: con tanto solape el cilindro se llena fatal abajo.
+        // El llenado va a la deriva de una explosión a otra y algunas casi
+        // fallan: eso, y no un filtro, es el ralentí lopeado.
+        let charge=1;
+        if(cam>0){
+          const low=1-Math.min(1,this.rpm/2800);
+          this.lope=this.lope*0.72+(Math.random()*2-1)*0.5;
+          charge=1+(this.cyl[this.fi]-1+this.lope*0.55)*cam*1.5*low;
+          if(Math.random()<0.09*cam*low) charge*=0.18;   // fallo de encendido
+          if(charge<0.08) charge=0.08;
+          this.camSlow=cam*0.55*low*(charge<0.6?1.8:1);
+        }
+        this.env[b]=1; this.amp[b]=load*jitter*(e.bark||1)*charge;
+        // petardeo en retención: se acumula combustible sin quemar
+        if(this.thr<0.10 && this.rpm>2500 && Math.random()<0.07){
+          this.amp[b]*= 2.4+Math.random()*2.2; this.pops=1;
+        }
+        this.fi++;
+      }
+
+      // --- pulso de combustión: ataque instantáneo, caída exponencial ---
+      const tau = decayBase*(1.5-this.thr*0.55)*(1+this.camSlow);
+      const dec = Math.exp(-1/(tau*sr));
+      let sum=0;
+      for(let b=0;b<2;b++){
+        this.env[b]*=dec;
+        const ex=this.env[b]*this.amp[b]*(0.42+0.58*(Math.random()*2-1));
+        // --- colector + escape: línea de retardo realimentada ---
+        const L=this.len[b];
+        let r=this.dw[b]-L; if(r<0) r+=8192;
+        const d=this.dl[b][r];
+        this.lp[b]+= (d-this.lp[b])*damp;
+        const y=ex + fb*this.lp[b];
+        this.dl[b][this.dw[b]]=y;
+        this.dw[b]=(this.dw[b]+1)&8191;
+        sum+=y;
+      }
+      sum*=0.5;
+
+      // admisión: turbulencia de aire ligada a la carga
+      const air=(Math.random()*2-1);
+      this.wp += (air-this.wp)*0.16;
+      // Con tanto solape parte de la carga se devuelve a la admisión, pero eso
+      // pasa EN cada explosión, no de forma continua: por eso va montado sobre
+      // la envolvente y no como un ruido de fondo que taparía el lope.
+      sum += this.wp*(e.intake||.1)*(0.2+this.thr*1.4
+             + cam*1.9*(1-Math.min(1,this.rpm/2800))*(this.env[0]+this.env[1]));
+
+      // silbido de turbo
+      if(e.turbo){
+        this.wp2 += 2*Math.PI*(1100+this.rpm*0.62)/sr;
+        if(this.wp2>6.2831853) this.wp2-=6.2831853;
+        sum += Math.sin(this.wp2)*0.03*this.thr*Math.min(1,this.rpm/5000);
+      }
+
+      // quitar continua, saturar y filtrar el silenciador
+      this.dcx += (sum-this.dcx)*0.0016; sum-=this.dcx;
+      let y=sum*drive; y=y/(1+Math.abs(y));
+      const cut=1-Math.exp(-2*Math.PI*((e.tone||3000)*(0.35+this.thr*0.75)+400)/sr);
+      this.tone += (y-this.tone)*cut;
+      this.tone2 += (this.tone-this.tone2)*cut;
+      let o=this.tone2*this.gain*1.7;
+
+      // corte del limitador de vueltas
+      if(this.rpm>=e.redline-30){
+        this.limiter+=1/sr;
+        if((this.limiter*22|0)%2===0) o*=0.10;
+      } else this.limiter=0;
+
+      out[i]=o>1?1:(o<-1?-1:o);
+    }
+  }
+  renderWhine(out,glide){
+    const e=this.e, sr=this.sr;
+    for(let i=0;i<out.length;i++){
+      this.rpm += (this.rpmT-this.rpm)*glide;
+      this.thr += (this.thrT-this.thr)*glide;
+      this.gain += (this.gainT-this.gain)*glide;
+      const f=(e.base||120)+this.rpm*0.055*(e.ratio||2)+this.spd*2.6;
+      this.wp += 2*Math.PI*f/sr; if(this.wp>6.2831853) this.wp-=6.2831853;
+      this.wp2 += 2*Math.PI*f*2.51/sr; if(this.wp2>6.2831853) this.wp2-=6.2831853;
+      let y=Math.sin(this.wp)*0.5+Math.sin(this.wp2)*0.18;
+      const air=(Math.random()*2-1);
+      this.dc += (air-this.dc)*(e.turbine?0.5:0.25);
+      y += this.dc*(e.intake||.1)*(0.4+this.thr);
+      const cut=1-Math.exp(-2*Math.PI*((e.tone||5000)*(0.4+this.thr*0.7))/sr);
+      this.tone += (y-this.tone)*cut;
+      let o=this.tone*this.gain*(0.5+this.thr*0.7);
+      out[i]=o>1?1:(o<-1?-1:o);
+    }
+  }
+}
+
+const WORKLET_SRC = EngineCore.toString() + `
+class EngineProcessor extends AudioWorkletProcessor{
+  constructor(){ super(); this.core=new EngineCore(sampleRate);
+    this.port.onmessage=ev=>this.core.set(ev.data); }
+  process(_i,outputs){
+    const o=outputs[0]; this.core.render(o[0]);
+    for(let c=1;c<o.length;c++) o[c].set(o[0]);
+    return true;
+  }
+}
+registerProcessor('engine-core',EngineProcessor);`;
+
+/* ================= estado ================= */
+const GEAR_TOP=[52,88,128,172,214,260], UP=.93, DOWN=.33;
+const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevSpeed:0,
+  rpm:800, targetRpm:800, throttle:0, revHold:false, gear:1, shiftT:0,
+  vol:.7, esc:.55, watchId:null, lastT:0 };
+
+let ctx=null, node=null, outGain=null, core=null, useWorklet=false, lopeP=0;
+
+async function buildAudio(){
+  ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
+  outGain=ctx.createGain(); outGain.gain.value=0;
+  const comp=ctx.createDynamicsCompressor();
+  comp.threshold.value=-10; comp.knee.value=18; comp.ratio.value=8; comp.attack.value=.003; comp.release.value=.15;
+  outGain.connect(comp); comp.connect(ctx.destination);
+
+  try{
+    const url=URL.createObjectURL(new Blob([WORKLET_SRC],{type:'application/javascript'}));
+    await ctx.audioWorklet.addModule(url);
+    node=new AudioWorkletNode(ctx,'engine-core',{outputChannelCount:[2]});
+    useWorklet=true;
+  }catch(err){
+    // reserva: ScriptProcessor con el mismo núcleo
+    diag('AudioWorklet no disponible ('+(err.message||err)+') → ScriptProcessor');
+    core=new EngineCore(ctx.sampleRate);
+    node=ctx.createScriptProcessor(512,0,2);
+    node.onaudioprocess=ev=>{
+      const b=ev.outputBuffer, ch0=b.getChannelData(0);
+      core.render(ch0); b.getChannelData(1).set(ch0);
+    };
+  }
+  node.connect(outGain);
+  pushParams(true);
+  diag(`ruta: ${useWorklet?'AudioWorklet':'ScriptProcessor'} · ${ctx.sampleRate} Hz · contexto ${ctx.state}`);
+}
+
+function pushParams(withEngine){
+  const p={ rpm:S.rpm, thr:S.throttle, gain:1, spd:S.speed, esc:S.esc };
+  if(withEngine) p.engine=S.engine;
+  if(useWorklet && node) node.port.postMessage(p);
+  else if(core) core.set(p);
+}
+
+/* ================= física ================= */
+function physics(dt){
+  const e=S.engine;
+  S.speed += (S.targetSpeed-S.speed)*Math.min(1,dt*3.5);
+  const accel=(S.speed-S.prevSpeed)/Math.max(dt,.001);
+  S.prevSpeed=S.speed;
+  if(S.shiftT>0) S.shiftT-=dt;
+
+  const stopped=S.speed<3;
+  let thr;
+  if(stopped){
+    S.gear=1;
+    if(S.revHold){ S.targetRpm=e.redline; thr=1; }
+    else if(e.cam){
+      lopeP+=dt*(2.4+e.cam*1.8);
+      const w=Math.sin(lopeP)*0.62+Math.sin(lopeP*1.73+1.1)*0.28+Math.sin(lopeP*0.61)*0.20;
+      S.targetRpm=e.idle*(1+w*0.13*e.cam);
+      thr=.05+Math.max(0,w)*0.10;
+    }
+    else { S.targetRpm=e.whine?400:e.idle; thr=.04; }
+  }else{
+    let pos=S.speed/GEAR_TOP[S.gear-1];
+    if(pos>UP && S.gear<GEAR_TOP.length){ S.gear++; S.shiftT=.28; }
+    else if(S.gear>1 && pos<DOWN){ S.gear--; S.shiftT=.15; }
+    pos=S.speed/GEAR_TOP[S.gear-1];
+    const idleF=(e.whine?400:e.idle)/e.redline;
+    S.targetRpm=Math.min(e.redline, e.redline*Math.max(idleF,pos));
+    thr=Math.max(0,Math.min(1,.16+accel/9));
+    if(accel<-1.5) thr=0;              // retención: se corta el gas
+    if(S.revHold) thr=1;
+    if(S.shiftT>0) thr*=.15;
+  }
+  const rate=(e.cam&&stopped&&!S.revHold)?9:(S.targetRpm>S.rpm?7:4.5);
+  S.rpm += (S.targetRpm-S.rpm)*Math.min(1,dt*rate);
+  S.throttle += (thr-S.throttle)*Math.min(1,dt*8);
+}
+
+/* ================= interfaz ================= */
+const $=s=>document.querySelector(s);
+const shift=$('#shift'), needle=$('#needle'), arcVal=$('#arcVal');
+const speedEl=$('#speed'), gearEl=$('#gearBox'), statusEl=$('#status');
+const leds=[];
+for(let i=0;i<10;i++){ const d=document.createElement('div'); d.className='led'; shift.appendChild(d); leds.push(d); }
+
+const CX=200,CY=200,R=152,A0=-135,A1=135;
+const ang=r=>A0+(r/MAX_RPM)*(A1-A0);
+const pt=(a,rad)=>[CX+rad*Math.sin(a*Math.PI/180), CY-rad*Math.cos(a*Math.PI/180)];
+function arc(f,t,rad){
+  const [x1,y1]=pt(ang(f),rad),[x2,y2]=pt(ang(t),rad);
+  return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${rad} ${rad} 0 ${(ang(t)-ang(f))>180?1:0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+}
+function drawTicks(redline){
+  $('#arcBg').setAttribute('d',arc(0,MAX_RPM,R+16));
+  $('#arcRed').setAttribute('d',arc(redline,MAX_RPM,R+16));
+  const g=$('#ticks'); g.innerHTML='';
+  for(let r=0;r<=MAX_RPM;r+=250){
+    const major=r%1000===0, a=ang(r), [x1,y1]=pt(a,R), [x2,y2]=pt(a,major?R-22:R-11);
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+    l.setAttribute('class','tick'+(major?'':' minor'));
+    l.setAttribute('stroke-width',major?3.5:1.4);
+    if(r>=redline) l.setAttribute('stroke','#D9411E');
+    g.appendChild(l);
+    if(major){
+      const [tx,ty]=pt(a,R-44);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',tx);t.setAttribute('y',ty);t.setAttribute('class','num');
+      t.setAttribute('font-size','30'); t.textContent=r/1000;
+      if(r>=redline) t.setAttribute('fill','#D9411E');
+      g.appendChild(t);
+    }
+  }
+}
+function renderUI(){
+  needle.setAttribute('transform',`rotate(${ang(S.rpm).toFixed(2)} ${CX} ${CY})`);
+  arcVal.setAttribute('d', S.rpm>60?arc(0,S.rpm,R+16):'');
+  speedEl.textContent=Math.round(S.speed);
+  gearEl.textContent=!S.on?'N':(S.speed<3?'N':String(S.gear));
+  const frac=S.rpm/S.engine.redline, lit=Math.max(0,Math.floor((frac-.55)/.45*10)), lim=frac>=.985&&S.on;
+  leds.forEach((d,i)=>{
+    d.className='led';
+    if(lim){ if(Math.floor(performance.now()/70)%2===0) d.classList.add('blink'); }
+    else if(i<lit) d.classList.add(i>=7?'red':'on');
+  });
+}
+let acc=0;
+function loop(now){
+  const dt=Math.min(.05,(now-(S.lastT||now))/1000); S.lastT=now;
+  physics(dt); renderUI();
+  acc+=dt; if(acc>0.02){ acc=0; if(S.on) pushParams(false); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+const list=$('#engines');
+ENGINES.forEach(e=>{
+  const b=document.createElement('button');
+  b.className='eng'; b.setAttribute('aria-pressed', e.id===S.engine.id);
+  b.innerHTML=`<span class="code">${e.code}</span><span class="desc">${e.desc}</span>`;
+  b.onclick=()=>{
+    S.engine=e; S.rpm=e.whine?400:e.idle; drawTicks(e.redline);
+    [...list.children].forEach(c=>c.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    if(S.on) pushParams(true);
+  };
+  list.appendChild(b);
+});
+drawTicks(S.engine.redline);
+
+const power=$('#power');
+power.onclick=async()=>{
+  if(!S.on){
+    try{
+      power.textContent='…';
+      if(!ctx) await buildAudio();
+      await ctx.resume();
+      if(ctx.state!=='running') diag('el navegador mantiene el audio suspendido (estado '+ctx.state+')');
+    S.on=true; power.dataset.on='true'; power.textContent='PARAR';
+    pushParams(true);
+    outGain.gain.setTargetAtTime(S.vol,ctx.currentTime,.25);
+    startSpeedSource(); requestWakeLock();
+    }catch(err){
+      power.textContent='ARRANCAR';
+      diag('ERROR al arrancar: '+(err&&err.message||err));
+    }
+  }else{
+    S.on=false; power.dataset.on='false'; power.textContent='ARRANCAR';
+    outGain.gain.setTargetAtTime(0,ctx.currentTime,.1);
+    setTimeout(()=>{ if(!S.on) ctx.suspend(); },400);
+    stopSpeedSource(); setStatus('Audio parado.');
+  }
+};
+
+const rev=$('#rev');
+const dn=ev=>{ev.preventDefault(); S.revHold=true; rev.classList.add('active');};
+const up=ev=>{ev.preventDefault(); S.revHold=false; rev.classList.remove('active');};
+['pointerdown','touchstart'].forEach(t=>rev.addEventListener(t,dn,{passive:false}));
+['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(t=>rev.addEventListener(t,up,{passive:false}));
+
+$('#vol').oninput=e=>{ S.vol=e.target.value/100; $('#volVal').textContent=e.target.value;
+  if(outGain&&S.on) outGain.gain.setTargetAtTime(S.vol,ctx.currentTime,.05); };
+$('#esc').oninput=e=>{ S.esc=e.target.value/100; $('#escVal').textContent=e.target.value; if(S.on) pushParams(false); };
+
+function setStatus(h){ statusEl.innerHTML=h; }
+function setMode(m){
+  S.mode=m;
+  $('#mGps').setAttribute('aria-pressed',m==='gps');
+  $('#mManual').setAttribute('aria-pressed',m==='manual');
+  $('#manualRow').hidden=m!=='manual';
+  if(S.on) startSpeedSource();
+}
+$('#mGps').onclick=()=>setMode('gps');
+$('#mManual').onclick=()=>setMode('manual');
+$('#mspd').oninput=e=>{ $('#mspdVal').textContent=e.target.value; if(S.mode==='manual') S.targetSpeed=+e.target.value; };
+
+function startSpeedSource(){
+  stopSpeedSource();
+  if(S.mode==='manual'){ S.targetSpeed=+$('#mspd').value; setStatus('Modo manual: mueve el deslizador.'); return; }
+  if(!navigator.geolocation){ setStatus('Sin GPS en este navegador. Usa <b>Manual</b>.'); return; }
+  setStatus('Buscando señal GPS…');
+  S.watchId=navigator.geolocation.watchPosition(pos=>{
+    const ms=pos.coords.speed;
+    S.targetSpeed=(ms==null||isNaN(ms)||ms<0)?0:ms*3.6;
+    setStatus(`GPS activo · <b>${S.targetSpeed.toFixed(0)} km/h</b> · precisión ${Math.round(pos.coords.accuracy)} m`);
+  },err=>{
+    setStatus(`GPS no disponible (${err.message}). Usa <b>Manual</b> o el botón de acelerar.`);
+  },{enableHighAccuracy:true,maximumAge:800,timeout:12000});
+}
+function stopSpeedSource(){ if(S.watchId!=null){ navigator.geolocation.clearWatch(S.watchId); S.watchId=null; } }
+
+function diag(m){ const d=$('#diag'); if(d) d.textContent=m; }
+window.addEventListener('error',e=>diag('ERROR: '+e.message));
+window.addEventListener('unhandledrejection',e=>diag('ERROR: '+(e.reason&&e.reason.message||e.reason)));
+document.addEventListener('pointerdown',()=>{ if(ctx&&ctx.state==='suspended') ctx.resume(); },true);
+
+// Prueba de salida: un tono puro por la ruta mas simple posible.
+$('#test').onclick=async()=>{
+  try{
+    if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+    await ctx.resume();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.frequency.value=440; g.gain.value=0;
+    o.connect(g); g.connect(ctx.destination); o.start();
+    const t=ctx.currentTime;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.3,t+.05);
+    g.gain.setValueAtTime(.3,t+.8); g.gain.linearRampToValueAtTime(0,t+1);
+    o.stop(t+1.05);
+    diag(`pitido enviado · contexto ${ctx.state} · ${ctx.sampleRate} Hz · salida ${ctx.destination.channelCount} canales`);
+  }catch(err){ diag('ERROR en el pitido: '+(err&&err.message||err)); }
+};
+
+let wl=null;
+async function requestWakeLock(){ try{ if('wakeLock' in navigator) wl=await navigator.wakeLock.request('screen'); }catch(e){} }
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&S.on){ ctx&&ctx.resume(); requestWakeLock(); }
+});
+</script>
+</body>
+</html>
