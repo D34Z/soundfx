@@ -171,6 +171,8 @@ body.c-gforce{--ink:#06090D;--ivory:#EAF0F6;--ivory-dim:#5F7181;--amber:#FF9F1C;
         <input type="range" id="vol" min="0" max="100" value="70"><span class="val" id="volVal">70</span></div>
       <div class="row"><label for="esc">Escape</label>
         <input type="range" id="esc" min="0" max="100" value="55"><span class="val" id="escVal">55</span></div>
+      <div class="row"><label>Pops &amp; bangs</label>
+        <div class="seg" style="flex:1" id="pabSeg"></div></div>
       <div class="row"><label for="masa">Masa kg</label>
         <input type="range" id="masa" min="900" max="2600" step="50" value="1900"><span class="val" id="masaV">1900</span></div>
       <div class="row" style="padding-bottom:2px">
@@ -231,6 +233,8 @@ const FIRE = {
   boxer:[[0,0],[180,1],[360,0],[540,1]],   // colectores de distinta longitud
   i6:  [[0,0],[120,0],[240,0],[360,0],[480,0],[600,0]],
   b6:  [[0,0],[120,1],[240,0],[360,1],[480,0],[600,1]],
+  // 5 en línea: orden 1-2-4-5-3, un encendido cada 144°
+  i5:  [[0,0],[144,0],[288,0],[432,0],[576,0]],
 };
 
 const ENGINES = [
@@ -238,6 +242,18 @@ const ENGINES = [
     idle:720, redline:6400, pipe:[58,67], fb:.74, damp:.28, decay:.0042, drive:2.6, tone:2600, intake:.10, bark:1.15 , tq:{rP:.42,wLo:.60,wHi:.90,low:.42,rLow:.22}},
   { id:'v8cam', code:'V8 CAM', desc:'Leva radical — ralentí lopeado', fire:FIRE.v8cross,
     idle:1000, redline:7200, pipe:[54,63], fb:.68, damp:.28, decay:.0050, drive:3.0, tone:3100, intake:.19, bark:1.35, cam:1, pop:.03 , tq:{rP:.70,wLo:.42,wHi:.62,low:.12,rLow:.58}},
+  { id:'hemi57', code:'5.7', desc:'HEMI de 5.7 — empuje grave', fire:FIRE.v8cross,
+    idle:680, redline:6000, pipe:[52,60], fb:.76, damp:.24, decay:.0048, drive:2.5, tone:2300,
+    intake:.11, bark:1.25, pop:.012, tq:{rP:.38,wLo:.66,wHi:.92,low:.50,rLow:.18} },
+  { id:'hemi64', code:'392', desc:'HEMI de 6.4 atmosférico', fire:FIRE.v8cross,
+    idle:720, redline:6400, pipe:[55,64], fb:.75, damp:.26, decay:.0044, drive:2.8, tone:2700,
+    intake:.13, bark:1.35, pop:.02, tq:{rP:.45,wLo:.64,wHi:.88,low:.46,rLow:.20} },
+  { id:'hellcat', code:'HELLCAT', desc:'6.2 sobrealimentado — con chirrido', fire:FIRE.v8cross,
+    idle:750, redline:6200, pipe:[50,58], fb:.78, damp:.22, decay:.0046, drive:3.0, tone:2500,
+    intake:.20, bark:1.45, pop:.015, blower:7.2, tq:{rP:.52,wLo:.72,wHi:.86,low:.52,rLow:.16} },
+  { id:'i5', code:'5L', desc:'Cinco en línea — gorgoteo característico', fire:FIRE.i5,
+    idle:800, redline:7000, pipe:[70,70], fb:.72, damp:.32, decay:.0034, drive:2.7, tone:3300,
+    intake:.14, bark:1.10, pop:.025, tq:{rP:.42,wLo:.56,wHi:.80,low:.34,rLow:.24} },
   { id:'v8f', code:'V8 F', desc:'Cigüeñal plano — superdeportivo', fire:FIRE.v8flat,
     idle:950, redline:8000, pipe:[104,119], fb:.68, damp:.42, decay:.0026, drive:3.1, tone:4600, intake:.09, bark:1.0 , tq:{rP:.62,wLo:.58,wHi:.72,low:.30,rLow:.34}},
   { id:'v12', code:'V12', desc:'Aullido de doce cilindros', fire:FIRE.v12,
@@ -248,8 +264,9 @@ const ENGINES = [
     idle:780, redline:6800, pipe:[86,97], fb:.7, damp:.36, decay:.0032, drive:2.3, tone:3200, intake:.11, bark:.95 , tq:{rP:.50,wLo:.58,wHi:.80,low:.36,rLow:.26}},
   { id:'i6',  code:'6L',  desc:'Seis en línea — suave y grave', fire:FIRE.i6,
     idle:700, redline:7000, pipe:[76,76], fb:.72, damp:.34, decay:.0030, drive:2.0, tone:3000, intake:.09, bark:.8 , tq:{rP:.44,wLo:.62,wHi:.88,low:.42,rLow:.22}},
-  { id:'i4t', code:'4T',  desc:'Cuatro cilindros turbo', fire:FIRE.i4,
-    idle:850, redline:7000, pipe:[92,92], fb:.69, damp:.38, decay:.0030, drive:2.7, tone:3000, intake:.14, bark:1.0, turbo:1 , tq:{rP:.32,wLo:.26,wHi:.62,low:.18,rLow:.24}},
+  { id:'i4t', code:'1.8T', desc:'1.8 de 20 válvulas — turbo pequeño y silbón', fire:FIRE.i4,
+    idle:820, redline:6500, pipe:[98,98], fb:.67, damp:.40, decay:.0027, drive:2.4, tone:3400,
+    intake:.12, bark:.90, turbo:2.0, pop:.012, tq:{rP:.26,wLo:.20,wHi:.54,low:.16,rLow:.20} },
   { id:'bxr', code:'BOXER', desc:'Bóxer de colectores desiguales', fire:FIRE.boxer,
     idle:800, redline:7200, pipe:[64,101], fb:.75, damp:.3, decay:.0038, drive:2.5, tone:2700, intake:.13, bark:1.1 , tq:{rP:.52,wLo:.55,wHi:.78,low:.32,rLow:.28}},
   { id:'gt3', code:'GT3', desc:'Bóxer 6 atmosférico de 9.000 rpm', fire:FIRE.b6,
@@ -257,7 +274,7 @@ const ENGINES = [
     intake:.17, bark:.95, pop:.008, tq:{rP:.74,wLo:.60,wHi:.60,low:.22,rLow:.40} },
   { id:'tcr', code:'TCR', desc:'2.0 turbo de tracción delantera', fire:FIRE.i4,
     idle:800, redline:6800, pipe:[84,84], fb:.71, damp:.34, decay:.0031, drive:2.9, tone:3100,
-    intake:.16, bark:1.05, turbo:1, pop:.055, tq:{rP:.30,wLo:.22,wHi:.58,low:.20,rLow:.22} },
+    intake:.16, bark:1.05, turbo:1.0, pop:.055, tq:{rP:.30,wLo:.22,wHi:.58,low:.20,rLow:.22} },
 ];
 
 /* ===========================================================
@@ -268,10 +285,10 @@ class EngineCore{
   constructor(sr){
     this.sr=sr; this.phase=0; this.fi=0;
     this.rpm=0; this.rpmT=800; this.thr=0; this.thrT=0; this.gain=0; this.gainT=0;
-    this.spd=0; this.esc=.55; this.limiter=0;
+    this.spd=0; this.esc=.55; this.limiter=0; this.pab=0; this.carLenta=0; this.bov=0; this.bovOn=false;
     this.dl=[new Float32Array(8192),new Float32Array(8192)];
     this.dw=[0,0]; this.lp=[0,0]; this.env=[0,0]; this.amp=[0,0];
-    this.dc=0; this.dcx=0; this.tone=0; this.tone2=0; this.wp=0; this.wp2=0;
+    this.dc=0; this.dcx=0; this.tone=0; this.tone2=0; this.wp=0; this.wp2=0; this.wp3=0;
     this.pops=0; this.lope=0; this.camSlow=0;
     this.cyl=new Float32Array(16).fill(1);
     this.setEngine({fire:[[0,0],[180,0],[360,0],[540,0]],idle:800,redline:7000,
@@ -290,6 +307,7 @@ class EngineCore{
     if(p.gain!==undefined) this.gainT=p.gain;
     if(p.spd!==undefined) this.spd=p.spd;
     if(p.esc!==undefined) this.esc=p.esc;
+    if(p.pab!==undefined) this.pab=p.pab;
     if(p.engine) this.setEngine(p.engine);
   }
   render(out){
@@ -305,6 +323,10 @@ class EngineCore{
       this.rpm += (this.rpmT-this.rpm)*glide;
       this.thr += (this.thrT-this.thr)*glide;
       this.gain += (this.gainT-this.gain)*glide;
+      // Combustible sin quemar acumulado: sigue a la carga con mucha inercia,
+      // así que al levantar el pie queda alto y se va agotando poco a poco.
+      // Es lo que decide cuánto crepita y durante cuánto rato.
+      this.carLenta += (this.thr-this.carLenta)/(1.4*sr);
 
       // --- avance del cigüeñal y disparo de cilindros ---
       const dps=this.rpm*6/sr;             // grados por muestra
@@ -335,8 +357,16 @@ class EngineCore{
         this.env[b]=1; this.amp[b]=load*jitter*(e.bark||1)*charge;
         this.off[b]=1+((this.fi%5)-2)*0.035;   // tubo primario de cada cilindro
         // petardeo en retención: se acumula combustible sin quemar
-        if(this.thr<0.10 && this.rpm>3300 && Math.random()<(e.pop!==undefined?e.pop:0.015)){
-          this.amp[b]*= 1.6+Math.random()*1.1; this.pops=1;
+        // Con pops & bangs activado sube la probabilidad y la violencia, y
+        // ambas escalan con lo cargado que venía el motor: tras un tirón largo
+        // crepita mucho más que si venías de crucero.
+        if(this.thr<0.12 && this.rpm>2600){
+          const pab=this.pab, reserva=Math.min(1,this.carLenta*1.6);
+          const prob=(e.pop!==undefined?e.pop:0.015)*(1+pab*7)*(0.25+reserva);
+          if(Math.random()<prob){
+            this.amp[b]*= 1.6+Math.random()*1.1 + pab*reserva*(2.2+Math.random()*3.4);
+            this.pops=1;
+          }
         }
         this.fi++;
       }
@@ -369,11 +399,28 @@ class EngineCore{
       sum += this.wp*(e.intake||.1)*(0.2+this.thr*1.4
              + cam*1.9*(1-Math.min(1,this.rpm/2800))*(this.env[0]+this.env[1]));
 
-      // silbido de turbo
+      // Chirrido del compresor volumétrico: los lóbulos del rotor por su
+      // relación de transmisión dan un tono fijo, múltiplo exacto del régimen.
+      if(e.blower){
+        this.wp3 += 2*Math.PI*(this.rpm/60*e.blower)/sr;
+        if(this.wp3>6.2831853) this.wp3-=6.2831853;
+        sum += Math.sin(this.wp3)*0.042*(0.2+this.thr*0.95)*Math.min(1,this.rpm/2200);
+      }
+      // Silbido del turbo: la ganancia ya es por motor, porque un turbo
+      // pequeño chilla mucho más que uno grande al mismo régimen.
       if(e.turbo){
         this.wp2 += 2*Math.PI*(1100+this.rpm*0.62)/sr;
         if(this.wp2>6.2831853) this.wp2-=6.2831853;
-        sum += Math.sin(this.wp2)*0.03*this.thr*Math.min(1,this.rpm/5000);
+        sum += Math.sin(this.wp2)*0.03*e.turbo*this.thr*Math.min(1,this.rpm/5000);
+        // Válvula de descarga: al cerrar la mariposa con presión hecha, el aire
+        // comprimido no tiene salida y se suelta. Por eso depende de la carga
+        // que llevaba, no de la posición del pie ahora.
+        if(this.thr<0.15 && this.carLenta>0.42 && !this.bovOn){ this.bov=1; this.bovOn=true; }
+        if(this.thr>0.40) this.bovOn=false;
+        if(this.bov>0.001){
+          this.bov *= Math.exp(-1/(0.22*sr));
+          sum += (Math.random()*2-1)*this.bov*0.085*e.turbo;
+        }
       }
 
       // quitar continua, saturar y filtrar el silenciador
@@ -467,7 +514,7 @@ function cargaReal(e,accel,vKmh,r,gear,pend){
 const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevSpeed:0,
   rpm:800, targetRpm:800, throttle:0, revHold:false, gear:1, shiftT:0,
   vol:.7, esc:.55, watchId:null, lastT:0, blipT:0, lockT:0,
-  resp:'vel', demand:0, carga:0, masa:1900, full:false,
+  resp:'vel', demand:0, carga:0, masa:1900, full:false, pab:0,
   gLon:0, gLat:0, gPk:0, rumbo:null, giro:0, antiUp:0, log:[], logOn:false, pend:0, usarPend:false, sp:null,
   gps:{t:0,v:0,a:0,hz:0,lat:null,lon:null} };
 
@@ -501,7 +548,7 @@ async function buildAudio(){
 }
 
 function pushParams(withEngine){
-  const p={ rpm:S.rpm, thr:S.throttle, gain:1, spd:S.speed, esc:S.esc };
+  const p={ rpm:S.rpm, thr:S.throttle, gain:1, spd:S.speed, esc:S.esc, pab:S.pab };
   if(withEngine) p.engine=S.engine;
   if(useWorklet && node) node.port.postMessage(p);
   else if(core) core.set(p);
@@ -901,6 +948,15 @@ function setFull(v){
 $('#fsBtn').onclick=()=>setFull(true);
 $('#fsExit').onclick=()=>setFull(false);
 
+const pabSeg=$('#pabSeg');
+[['No',0],['Suave',.45],['Bestia',1]].forEach(([txt,v])=>{
+  const b=document.createElement('button');
+  b.textContent=txt; b.setAttribute('aria-pressed', v===S.pab);
+  b.onclick=()=>{ S.pab=v;
+    [...pabSeg.children].forEach(c=>c.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true'); if(S.on) pushParams(false); };
+  pabSeg.appendChild(b);
+});
 $('#masa').oninput=e=>{ S.masa=+e.target.value; $('#masaV').textContent=S.masa; };
 $('#esc').oninput=e=>{ S.esc=e.target.value/100; $('#escVal').textContent=e.target.value; if(S.on) pushParams(false); };
 
