@@ -31,7 +31,7 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
   min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #left{min-height:0}
 
-#gaugeWrap{width:100%;max-width:min(46vh,420px);position:relative}
+#gaugeWrap{width:100%;max-width:min(46vh,420px);position:relative;display:flex;align-items:center;justify-content:center}
 svg{width:100%;height:auto;display:block}
 .tick{stroke:var(--ivory);stroke-linecap:butt}
 .tick.minor{stroke:#6E675C}
@@ -72,23 +72,56 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid #0F0
 .seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
 .seg button{flex:1;padding:9px 4px;font-size:.75rem;letter-spacing:.14em;color:var(--ivory-dim);text-transform:uppercase}
 .seg button[aria-pressed="true"]{background:rgba(240,162,46,.14);color:var(--amber)}
+body.full #right{display:none}
+body.full #left{flex:1 1 100%}
+body.full #shift{height:26px}
+#fsExit{display:none;position:fixed;top:6px;right:8px;z-index:40;font-size:.66rem;letter-spacing:.16em;
+  color:var(--ivory-dim);border:1px solid var(--line);border-radius:3px;padding:6px 9px;background:rgba(0,0,0,.5)}
+body.full #fsExit{display:block}
 #status{font-size:.74rem;color:var(--ivory-dim);letter-spacing:.05em;padding:0 2px;line-height:1.35;min-height:2.4em}
 #status b{color:var(--amber);font-weight:600}
-body.t-dig{--ink:#04080C;--ivory:#DCEEF5;--ivory-dim:#5E7C88;--amber:#37D2EC;--amber-deep:#12626F;
-  --red:#FF4B4B;--line:#123240;background:radial-gradient(120% 90% at 50% 0%,#0B1922 0%,#04080C 62%),#04080C}
-body.t-vel{--ink:#0B0B0C;--ivory:#F4F4F2;--ivory-dim:#7E7E82;--amber:#EDEDE8;--amber-deep:#5A5A5C;
-  --red:#E03A2F;--line:#2A2A2D;background:radial-gradient(120% 90% at 50% 0%,#191A1C 0%,#0B0B0C 62%),#0B0B0C}
-body.t-min{--ink:#000;--ivory:#FFB347;--ivory-dim:#6B4A1C;--amber:#FFB347;--amber-deep:#7A5210;
-  --red:#FF5A2B;--line:#241703;background:#000}
-#diag{font-size:.68rem;color:#6E675C;letter-spacing:.02em;line-height:1.35;padding:0 2px;
-  font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-word;max-height:4.2em;overflow:auto}
+/* Cada cuadro trae su paleta Y su estructura, no solo otro color */
+body.c-clasico{--ink:#0A0908;--ivory:#E9DFC8;--ivory-dim:#8C857A;--amber:#F0A22E;--amber-deep:#8A5A12;
+  --red:#D9411E;--line:#2C2822;background:radial-gradient(120% 90% at 50% 0%,#17140F 0%,#0A0908 62%),#0A0908}
+body.c-confort{--ink:#080A0D;--ivory:#E8EEF4;--ivory-dim:#67757F;--amber:#5FB0E8;--amber-deep:#1D4E70;
+  --red:#E2604A;--line:#1B242C;background:radial-gradient(120% 90% at 50% 0%,#111820 0%,#080A0D 62%),#080A0D}
+body.c-track{--ink:#050505;--ivory:#F2F2F0;--ivory-dim:#7C7F82;--amber:#A9D600;--amber-deep:#3E5200;
+  --red:#D5001C;--line:#202225;background:#050505}
+body.c-gforce{--ink:#06090D;--ivory:#EAF0F6;--ivory-dim:#5F7181;--amber:#FF9F1C;--amber-deep:#7A4A00;
+  --red:#FF3B30;--line:#17222C;background:radial-gradient(120% 90% at 50% 0%,#0C141C 0%,#06090D 62%),#06090D}
+
+.ro{position:absolute;left:0;right:0;top:56%;text-align:center;pointer-events:none}
+.ro.gro{top:75%}
+.big2{font-size:clamp(38px,10vh,74px);font-weight:700;line-height:.85;letter-spacing:-.02em}
+.ro .u{font-size:.8rem;letter-spacing:.2em;color:var(--ivory-dim);margin-top:4px}
+.ro .gr{margin-top:5px;font-size:1.4rem;color:var(--amber);letter-spacing:.1em}
+
+/* Track: sin esfera. Barra de tiro arriba y la marcha como protagonista */
+.tk{width:100%;display:flex;flex-direction:column;gap:12px}
+.tkbar{display:flex;gap:3px;height:34px}
+.tkbar i{flex:1;background:#141516;border-radius:1px}
+.tkbar i.v{background:var(--amber);box-shadow:0 0 8px rgba(169,214,0,.5)}
+.tkbar i.a{background:#FFC400;box-shadow:0 0 8px rgba(255,196,0,.5)}
+.tkbar i.r{background:var(--red);box-shadow:0 0 10px rgba(213,0,28,.6)}
+.tkmid{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tkside{flex:1;text-align:center}
+.tkside b{display:block;font-size:clamp(24px,6.5vh,50px);font-weight:700;line-height:.9}
+.tkside span{font-size:.66rem;letter-spacing:.2em;color:var(--ivory-dim)}
+.tkgear{flex:0 0 auto;font-size:clamp(64px,19vh,140px);font-weight:700;line-height:.8;
+  color:var(--amber);min-width:1.1em;text-align:center}
+.tkfoot{display:flex;justify-content:space-between;font-size:.68rem;letter-spacing:.14em;
+  color:var(--ivory-dim);border-top:1px solid var(--line);padding-top:7px}
+
+#diag{font-size:.68rem;color:var(--ivory-dim);letter-spacing:.02em;line-height:1.35;padding:0 2px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-word;max-height:6em;overflow:auto}
 
 /* Pantallas bajas (móvil en horizontal): compactar todo para que no se corte */
 @media (max-height: 560px){
   #shift{height:20px;padding:4px 8px 2px}
   .led{height:6px;flex-basis:26px}
   #app{height:calc(100% - 20px);gap:9px;padding:0 9px 6px}
-  #gaugeWrap{max-width:min(58vh,300px)}
+  .tkgear{font-size:clamp(50px,21vh,100px)}
+  .big2{font-size:clamp(30px,11vh,54px)}
   #speed{font-size:clamp(30px,13vh,58px)}
   #speedUnit{font-size:.7rem;margin-top:2px}
   #gearBox{font-size:1.15rem;margin-top:3px}
@@ -105,7 +138,7 @@ body.t-min{--ink:#000;--ivory:#FFB347;--ivory-dim:#6B4A1C;--amber:#FFB347;--ambe
 @media (max-aspect-ratio: 1/1){
   #app{flex-direction:column;overflow-y:auto}
   #left{flex:0 0 auto;padding:4px 0}
-  #gaugeWrap{max-width:min(60vw,320px)}
+  .tkgear{font-size:clamp(56px,15vh,110px)}
   #right{flex:0 0 auto}
   #engines{max-height:150px}
 }
@@ -115,34 +148,10 @@ body.t-min{--ink:#000;--ivory:#FFB347;--ivory-dim:#6B4A1C;--amber:#FFB347;--ambe
 
 <div id="shift" aria-hidden="true"></div>
 
+<button id="fsExit">SALIR</button>
 <div id="app">
   <div id="left">
     <div id="gaugeWrap">
-      <svg viewBox="0 0 400 400" id="gauge" aria-label="Cuentavueltas">
-        <defs>
-          <radialGradient id="face" cx="50%" cy="42%" r="62%">
-            <stop id="fc0" offset="0%" stop-color="#1E1B16"/><stop id="fc1" offset="100%" stop-color="#0C0B09"/>
-          </radialGradient>
-
-        </defs>
-        <circle id="faceOuter" cx="200" cy="200" r="192" fill="url(#face)" stroke="var(--line)" stroke-width="2"/>
-        <circle id="faceInner" cx="200" cy="200" r="176" fill="none" stroke="var(--line)" stroke-width="1"/>
-        <path id="arcBg" fill="none" stroke="#221E19" stroke-width="9"/>
-        <path id="arcRed" fill="none" stroke="#4A1810" stroke-width="9"/>
-        <path id="arcVal" fill="none" stroke="var(--amber)" stroke-width="9"/>
-        <g id="segs"></g>
-        <g id="ticks"></g>
-        <text class="lbl" id="dialLbl" x="200" y="118" font-size="13">x1000 r/min</text>
-        <text class="lbl" id="dialBig" x="200" y="152" font-size="46" style="fill:var(--amber);letter-spacing:0"></text>
-        <g id="needle">
-          <path d="M200 46 L205 200 L195 200 Z" fill="var(--red)"/>
-          <circle cx="200" cy="200" r="13" fill="#100E0C" stroke="#3A342B" stroke-width="2"/>
-          <circle cx="200" cy="200" r="4" fill="#E9DFC8"/>
-        </g>
-      </svg>
-      <div id="readout">
-        <div id="speed">0</div><div id="speedUnit">km/h</div><div id="gearBox">N</div>
-      </div>
     </div>
   </div>
 
@@ -162,9 +171,18 @@ body.t-min{--ink:#000;--ivory:#FFB347;--ivory-dim:#6B4A1C;--amber:#FFB347;--ambe
         <input type="range" id="vol" min="0" max="100" value="70"><span class="val" id="volVal">70</span></div>
       <div class="row"><label for="esc">Escape</label>
         <input type="range" id="esc" min="0" max="100" value="55"><span class="val" id="escVal">55</span></div>
+      <div class="row"><label for="masa">Masa kg</label>
+        <input type="range" id="masa" min="900" max="2600" step="50" value="1900"><span class="val" id="masaV">1900</span></div>
       <div class="row" style="padding-bottom:2px">
         <label>Esfera</label>
-        <div class="seg" style="flex:1" id="themeSeg"></div>
+        <div class="seg" style="flex:1;flex-wrap:wrap" id="themeSeg"></div>
+      </div>
+      <div class="row" style="padding-bottom:2px">
+        <label>Pendiente</label>
+        <div class="seg" style="flex:1">
+          <button id="pOff" aria-pressed="true">No</button>
+          <button id="pOn" aria-pressed="false">Altitud GPS</button>
+        </div>
       </div>
       <div class="row" style="padding-bottom:2px">
         <label>Responde a</label>
@@ -175,6 +193,7 @@ body.t-min{--ink:#000;--ivory:#FFB347;--ivory-dim:#6B4A1C;--amber:#FFB347;--ambe
       </div>
       <div class="row" style="padding-top:2px">
         <button id="test" class="seg" style="flex:0 0 auto;padding:8px 12px;font-size:.75rem;letter-spacing:.14em">PITIDO</button>
+        <button id="logBtn" class="seg" style="flex:0 0 auto;padding:8px 12px;font-size:.75rem;letter-spacing:.14em" aria-pressed="false">REGISTRO</button>
         <div class="seg" style="flex:1">
           <button id="mGps" aria-pressed="true">GPS</button>
           <button id="mManual" aria-pressed="false">Manual</button>
@@ -184,6 +203,7 @@ body.t-min{--ink:#000;--ivory:#FFB347;--ivory-dim:#6B4A1C;--amber:#FFB347;--ambe
         <input type="range" id="mspd" min="0" max="260" value="0"><span class="val" id="mspdVal">0</span></div>
     </div>
 
+    <button class="big" id="fsBtn" style="flex:none">PANTALLA COMPLETA</button>
     <div id="status">Pulsa <b>ARRANCAR</b> para activar el audio.</div>
     <div id="diag"></div>
   </div>
@@ -198,7 +218,7 @@ body.t-min{--ink:#000;--ivory:#FFB347;--ivory-dim:#6B4A1C;--amber:#FFB347;--ambe
    de la geometría del motor, no de una suma de osciladores.
    =========================================================== */
 
-const MAX_RPM = 8000;
+const MAX_RPM = 9000;
 
 /* --- tablas de encendido: [ángulo del ciclo 0-720, banco] --- */
 function evenV(n){ const a=[]; for(let i=0;i<n;i++) a.push([i*720/n, i%2]); return a; }
@@ -210,31 +230,34 @@ const FIRE = {
   i4:  [[0,0],[180,0],[360,0],[540,0]],
   boxer:[[0,0],[180,1],[360,0],[540,1]],   // colectores de distinta longitud
   i6:  [[0,0],[120,0],[240,0],[360,0],[480,0],[600,0]],
+  b6:  [[0,0],[120,1],[240,0],[360,1],[480,0],[600,1]],
 };
 
 const ENGINES = [
   { id:'v8x', code:'V8', desc:'Cigüeñal cruzado — muscle car', fire:FIRE.v8cross,
-    idle:720, redline:6400, pipe:[58,67], fb:.74, damp:.28, decay:.0042, drive:2.6, tone:2600, intake:.10, bark:1.15 },
+    idle:720, redline:6400, pipe:[58,67], fb:.74, damp:.28, decay:.0042, drive:2.6, tone:2600, intake:.10, bark:1.15 , tq:{rP:.42,wLo:.60,wHi:.90,low:.42,rLow:.22}},
   { id:'v8cam', code:'V8 CAM', desc:'Leva radical — ralentí lopeado', fire:FIRE.v8cross,
-    idle:1000, redline:7200, pipe:[54,63], fb:.68, damp:.28, decay:.0050, drive:3.0, tone:3100, intake:.19, bark:1.35, cam:1, pop:.03 },
+    idle:1000, redline:7200, pipe:[54,63], fb:.68, damp:.28, decay:.0050, drive:3.0, tone:3100, intake:.19, bark:1.35, cam:1, pop:.03 , tq:{rP:.70,wLo:.42,wHi:.62,low:.12,rLow:.58}},
   { id:'v8f', code:'V8 F', desc:'Cigüeñal plano — superdeportivo', fire:FIRE.v8flat,
-    idle:950, redline:8000, pipe:[104,119], fb:.68, damp:.42, decay:.0026, drive:3.1, tone:4600, intake:.09, bark:1.0 },
+    idle:950, redline:8000, pipe:[104,119], fb:.68, damp:.42, decay:.0026, drive:3.1, tone:4600, intake:.09, bark:1.0 , tq:{rP:.62,wLo:.58,wHi:.72,low:.30,rLow:.34}},
   { id:'v12', code:'V12', desc:'Aullido de doce cilindros', fire:FIRE.v12,
-    idle:1000, redline:8000, pipe:[132,148], fb:.63, damp:.5, decay:.0019, drive:2.2, tone:5600, intake:.07, bark:.85 },
+    idle:1000, redline:8000, pipe:[132,148], fb:.63, damp:.5, decay:.0019, drive:2.2, tone:5600, intake:.07, bark:.85 , tq:{rP:.70,wLo:.62,wHi:.66,low:.28,rLow:.34}},
   { id:'v10', code:'V10', desc:'Grito metálico de diez', fire:FIRE.v10,
-    idle:900, redline:8000, pipe:[118,131], fb:.66, damp:.46, decay:.0021, drive:2.9, tone:5000, intake:.08, bark:.95 },
+    idle:900, redline:8000, pipe:[118,131], fb:.66, damp:.46, decay:.0021, drive:2.9, tone:5000, intake:.08, bark:.95 , tq:{rP:.68,wLo:.58,wHi:.68,low:.26,rLow:.34}},
   { id:'v6',  code:'V6',  desc:'Seis cilindros aspirado', fire:FIRE.v6,
-    idle:780, redline:6800, pipe:[86,97], fb:.7, damp:.36, decay:.0032, drive:2.3, tone:3200, intake:.11, bark:.95 },
+    idle:780, redline:6800, pipe:[86,97], fb:.7, damp:.36, decay:.0032, drive:2.3, tone:3200, intake:.11, bark:.95 , tq:{rP:.50,wLo:.58,wHi:.80,low:.36,rLow:.26}},
   { id:'i6',  code:'6L',  desc:'Seis en línea — suave y grave', fire:FIRE.i6,
-    idle:700, redline:7000, pipe:[76,76], fb:.72, damp:.34, decay:.0030, drive:2.0, tone:3000, intake:.09, bark:.8 },
+    idle:700, redline:7000, pipe:[76,76], fb:.72, damp:.34, decay:.0030, drive:2.0, tone:3000, intake:.09, bark:.8 , tq:{rP:.44,wLo:.62,wHi:.88,low:.42,rLow:.22}},
   { id:'i4t', code:'4T',  desc:'Cuatro cilindros turbo', fire:FIRE.i4,
-    idle:850, redline:7000, pipe:[92,92], fb:.69, damp:.38, decay:.0030, drive:2.7, tone:3000, intake:.14, bark:1.0, turbo:1 },
+    idle:850, redline:7000, pipe:[92,92], fb:.69, damp:.38, decay:.0030, drive:2.7, tone:3000, intake:.14, bark:1.0, turbo:1 , tq:{rP:.32,wLo:.26,wHi:.62,low:.18,rLow:.24}},
   { id:'bxr', code:'BOXER', desc:'Bóxer de colectores desiguales', fire:FIRE.boxer,
-    idle:800, redline:7200, pipe:[64,101], fb:.75, damp:.3, decay:.0038, drive:2.5, tone:2700, intake:.13, bark:1.1 },
-  { id:'ev',  code:'EV+', desc:'Silbido eléctrico reforzado', whine:1,
-    idle:0, redline:8000, base:130, ratio:2.4, tone:6000, intake:.05 },
-  { id:'jet', code:'JET', desc:'Turbina de reactor', whine:1, turbine:1,
-    idle:0, redline:8000, base:80, ratio:1.7, tone:7000, intake:.5 },
+    idle:800, redline:7200, pipe:[64,101], fb:.75, damp:.3, decay:.0038, drive:2.5, tone:2700, intake:.13, bark:1.1 , tq:{rP:.52,wLo:.55,wHi:.78,low:.32,rLow:.28}},
+  { id:'gt3', code:'GT3', desc:'Bóxer 6 atmosférico de 9.000 rpm', fire:FIRE.b6,
+    idle:1000, redline:9000, pipe:[112,127], fb:.62, damp:.52, decay:.0017, drive:3.2, tone:6200,
+    intake:.17, bark:.95, pop:.008, tq:{rP:.74,wLo:.60,wHi:.60,low:.22,rLow:.40} },
+  { id:'tcr', code:'TCR', desc:'2.0 turbo de tracción delantera', fire:FIRE.i4,
+    idle:800, redline:6800, pipe:[84,84], fb:.71, damp:.34, decay:.0031, drive:2.9, tone:3100,
+    intake:.16, bark:1.05, turbo:1, pop:.055, tq:{rP:.30,wLo:.22,wHi:.58,low:.20,rLow:.22} },
 ];
 
 /* ===========================================================
@@ -405,10 +428,47 @@ registerProcessor('engine-core',EngineProcessor);`;
 
 /* ================= estado ================= */
 const GEAR_TOP=[45,78,112,148,186,222,260];
+
+/* ---------- Curva de par normalizada (0-1 del par máximo) ----------
+   Parábola asimétrica alrededor del pico, con caída a bajas vueltas por
+   llenado. En el motor con leva radical esa caída es la misma constante
+   que le da el ralentí lopeado: mecánica y sonido salen de lo mismo. */
+function torque(e,r){
+  const q=e.tq||{rP:.5,wLo:.55,wHi:.8,low:.3,rLow:.3};
+  r=Math.max(0,Math.min(1,r));
+  const d=r-q.rP, w=d<0?q.wLo:q.wHi;
+  let t=1-(d/w)*(d/w);
+  if(t<.10) t=.10;
+  return t*Math.min(1, q.low+(1-q.low)*Math.min(1,r/q.rLow));
+}
+/* Punto de cambio óptimo: donde el empuje en rueda de la marcha siguiente
+   iguala al de la actual. La fuerza es proporcional a par/tope de marcha. */
+function shiftPoints(e){
+  const pts=[];
+  for(let g=1;g<GEAR_TOP.length;g++){
+    let x=1;
+    for(let v=.45;v<=1.0001;v+=.005){
+      const rN=v*GEAR_TOP[g-1]/GEAR_TOP[g];
+      if(torque(e,rN)/GEAR_TOP[g] >= torque(e,v)/GEAR_TOP[g-1]){ x=v; break; }
+    }
+    pts.push(Math.max(.55,Math.min(1,x)));
+  }
+  return pts;
+}
+/* Dinámica inversa: qué fuerza hace falta de verdad para la aceleración que
+   estoy midiendo, contra la que el motor puede dar a esas vueltas. */
+const CXA=.368, FMAX=12000;
+function cargaReal(e,accel,vKmh,r,gear,pend){
+  const v=vKmh/3.6, a=accel/3.6, M=S.masa;
+  const need = M*a + CXA*v*v + .011*M*9.81 + M*9.81*pend;
+  const disp = FMAX*torque(e,r)*(GEAR_TOP[0]/GEAR_TOP[gear-1]);
+  return Math.max(0, Math.min(1, need/Math.max(1,disp)));
+}
 const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevSpeed:0,
   rpm:800, targetRpm:800, throttle:0, revHold:false, gear:1, shiftT:0,
   vol:.7, esc:.55, watchId:null, lastT:0, blipT:0, lockT:0,
-  resp:'vel',
+  resp:'vel', demand:0, carga:0, masa:1900, full:false,
+  gLon:0, gLat:0, gPk:0, rumbo:null, giro:0, antiUp:0, log:[], logOn:false, pend:0, usarPend:false, sp:null,
   gps:{t:0,v:0,a:0,hz:0,lat:null,lon:null} };
 
 let ctx=null, node=null, outGain=null, core=null, useWorklet=false, lopeP=0;
@@ -448,6 +508,15 @@ function pushParams(withEngine){
 }
 
 /* ================= física ================= */
+// Registro de los últimos cambios, para diagnosticar en el coche
+function anota(de,a,tipo,accel,subir,bajar){
+  if(!S.logOn) return;
+  S.log.unshift(`${tipo} ${de}→${a} · ${S.speed.toFixed(0)}km/h ${Math.round(S.rpm)}rpm · `
+    +`a=${accel.toFixed(1)} carga=${S.demand.toFixed(2)} sube>${subir.toFixed(2)} baja<${bajar.toFixed(2)}`);
+  S.log.length=Math.min(S.log.length,4);
+  const d=$('#diag'); if(d) d.innerHTML=S.log.join('<br>');
+}
+
 function physics(dt){
   const e=S.engine;
 
@@ -469,6 +538,7 @@ function physics(dt){
   if(S.shiftT>0) S.shiftT-=dt;
   if(S.blipT>0) S.blipT-=dt;
   if(S.lockT>0) S.lockT-=dt;
+  if(S.antiUp>0) S.antiUp-=dt;
 
   const stopped=S.speed<3;
   let thr;
@@ -483,31 +553,54 @@ function physics(dt){
     }
     else { S.targetRpm=e.whine?400:e.idle; thr=.04; }
   }else{
-    // Vueltas que daría el motor en una marcha dada, como fracción del corte.
+    // ================= CAJA AUTOMÁTICA =================
+    // Ojo: esto YA funcionaba por velocidad. rev(g) es la velocidad expresada
+    // como fracción del tope de esa marcha; llamarlo "vueltas" es solo la
+    // forma de leerlo. Lo que iba mal no era la magnitud, era el mapa.
     const rev = g => Math.min(1, S.speed/GEAR_TOP[g-1]);
-    const braking = -accel;                       // km/h por segundo al frenar
+    const braking = -accel;
+
+    // 1) Demanda de par. Una TCU real no mira la aceleración cruda: mira la
+    //    mariposa, que sube rápida y baja despacio. Antes usaba la aceleración
+    //    directa y saltaba en escalones, y de ahí venían los cambios erráticos.
+    if(!S.sp) S.sp=shiftPoints(e);
+    const rAct=Math.min(1,S.speed/GEAR_TOP[S.gear-1]);
+    S.carga=cargaReal(e,accel,S.speed,rAct,S.gear,S.usarPend?S.pend:0);
+    const dCruda = S.revHold ? 1 : S.carga;
+    S.demand += (dCruda-S.demand)*Math.min(1, dt*(dCruda>S.demand?6:1.6));
+
+    // 2) Mapa de cambios: puntos continuos, no cuatro escalones.
+    //    Levantando el pie cambia a media banda; a fondo, contra el corte.
+    // El techo de cada marcha ya no es un número a mano: sale de la curva
+    // de par de ESTE motor. Con poca carga cambia pronto; a fondo, en el punto
+    // donde la marcha siguiente empuja más que la actual.
+    const opt = S.sp[Math.min(S.sp.length-1,S.gear-1)];
+    let subir = .52+(opt-.52)*S.demand;
+    const bajarBase = .30+.26*S.demand;
+    let bajar = bajarBase + (braking>4?Math.min(.26,(braking-4)*.02):0);
+
+    // 3) Garantía anti-vaivén: tras subir, el motor tiene que quedar un 30%
+    //    por encima del punto de reducción de la marcha que entra. Se calcula
+    //    con la relación real de cada salto, así que no puede oscilar.
+    if(S.gear<GEAR_TOP.length)
+      subir = Math.min(.99, Math.max(subir, bajarBase*(GEAR_TOP[S.gear]/GEAR_TOP[S.gear-1])*1.45));
+
     if(S.lockT<=0){
-      // Cuánto estira la marcha depende de con qué ganas aceleras. A tope la
-      // lleva al corte; en crucero cambia pronto para dejar el motor abajo.
-      // El segundo guardia evita que suba a una marcha donde se quedaría
-      // ahogada, que es lo que provocaría el sube-y-baja continuo.
-      const sube = S.revHold ? .97
-                 : (accel>12 ? .97 : (accel>5 ? .90 : (accel>1 ? .78 : .62)));
-      // Una caja real no sube de marcha mientras frenas, y menos aún en mitad
-      // del taloneo: la marcha que acaba de entrar deja el motor alto, y sin
-      // este guardia la vuelve a soltar inmediatamente.
-      if(S.gear<GEAR_TOP.length && accel>-1 && S.blipT<=0
-         && rev(S.gear)>sube && rev(S.gear+1)>.42){
-        S.gear++; S.shiftT=.28; S.lockT=.50;
+      // Tras reducir, no se vuelve a subir durante 2,2 s salvo que pises de
+      // verdad. Y no se sube nunca mientras la velocidad esté cayendo.
+      const puedeSubir = accel>-0.5 && S.blipT<=0 && (S.antiUp<=0 || S.demand>.5);
+      if(S.gear<GEAR_TOP.length && puedeSubir && rev(S.gear)>subir){
+        anota(S.gear,S.gear+1,'SUBE',accel,subir,bajar);
+        S.gear++; S.shiftT=.32; S.lockT=.55;
       } else if(S.gear>1){
-        // Cuanto más fuerte frenas, antes reduce: así retiene el motor.
-        // Al soltar el pie y dejarse rodar, la caja se vuelve perezosa.
-        const punto = braking>14 ? .58 : (braking>4 ? .46 : .36);
-        const abajo = rev(S.gear-1);
-        if(rev(S.gear)<punto && abajo<.88){
-          S.gear--; S.blipT=.38; S.lockT = braking>14 ? .32 : .58;
-        } else if(S.throttle>.70 && rev(S.gear)<.55 && abajo<.90){
-          S.gear--; S.blipT=.30; S.lockT=.50;     // patada abajo al pisar
+        if(rev(S.gear)<bajar && rev(S.gear-1)<.92){
+          anota(S.gear,S.gear-1,'baja',accel,subir,bajar);
+          S.gear--; S.blipT=.38; S.lockT = braking>14?.34:.58; S.antiUp=2.2;
+        } else if(S.demand>.75 && rev(S.gear)<.55 && rev(S.gear-1)<.92){
+          anota(S.gear,S.gear-1,'patada',accel,subir,bajar);
+          // Patada abajo: como en una automática, puede saltarse una marcha
+          S.gear--; S.blipT=.30; S.lockT=.50; S.antiUp=1.0;
+          if(S.gear>1 && rev(S.gear)<.55 && rev(S.gear-1)<.92){ S.gear--; }
         }
       }
     }
@@ -521,7 +614,7 @@ function physics(dt){
       thr=.22+.72*pos;
       if(accel<-3) thr*=.55;           // solo frenadas claras, y sin cortar
     } else {
-      thr=Math.max(0,Math.min(1,.16+accel/9));
+      thr=Math.max(.04, S.carga);    // gas real, por dinámica inversa
       if(accel<-1.5) thr=0;            // retención: se corta el gas
     }
     if(S.revHold) thr=1;
@@ -533,107 +626,199 @@ function physics(dt){
       S.targetRpm=Math.min(e.redline, S.targetRpm*(1+.11*Math.min(1,S.blipT/.24)));
     }
   }
-  const rate=S.blipT>0?15:((e.cam&&stopped&&!S.revHold)?9:(S.targetRpm>S.rpm?7:4.5));
+  // G longitudinal de la aceleración, lateral del radio de giro
+  S.gLon += ((accel/3.6)/9.81 - S.gLon)*Math.min(1,dt*6);
+  S.gLat += (((S.mode==='gps'?S.speed/3.6:0)*S.giro)/9.81 - S.gLat)*Math.min(1,dt*6);
+  const gTot=Math.hypot(S.gLon,S.gLat);
+  S.gPk = Math.max(gTot, S.gPk-dt*0.06);
+
+  const rate=S.blipT>0?15:(S.shiftT>0?8:((e.cam&&stopped&&!S.revHold)?9:(S.targetRpm>S.rpm?7:4.5)));
   S.rpm += (S.targetRpm-S.rpm)*Math.min(1,dt*rate);
   S.throttle += (thr-S.throttle)*Math.min(1,dt*8);
 }
 
 /* ================= interfaz ================= */
 const $=s=>document.querySelector(s);
-const shift=$('#shift'), needle=$('#needle'), arcVal=$('#arcVal');
-const speedEl=$('#speed'), gearEl=$('#gearBox'), statusEl=$('#status');
+const shift=$('#shift'), statusEl=$('#status'), wrap=$('#gaugeWrap');
+const NS='http://www.w3.org/2000/svg';
 const leds=[];
 for(let i=0;i<10;i++){ const d=document.createElement('div'); d.className='led'; shift.appendChild(d); leds.push(d); }
 
 const CX=200,CY=200,R=152,A0=-135,A1=135;
-const NS='http://www.w3.org/2000/svg';
-
-/* Cada estilo decide qué magnitud manda la aguja y cómo se dibuja la esfera. */
-const THEMES=[
-  { id:'ana', cls:'t-ana', nombre:'Analógico', dial:'rpm', aguja:true, segs:false,
-    face:['#1E1B16','#0C0B09'], paso:250, mayor:1000, div:1000, unidad:'x1000 r/min' },
-  { id:'dig', cls:'t-dig', nombre:'Digital',   dial:'rpm', aguja:false, segs:true,
-    face:['#0C1D26','#04080C'], paso:1000, mayor:1000, div:1000, unidad:'r/min', grande:'rpm' },
-  { id:'vel', cls:'t-vel', nombre:'Velocímetro', dial:'speed', aguja:true, segs:false,
-    face:['#1A1A1C','#0B0B0C'], paso:10, mayor:40, div:1, unidad:'km/h' },
-  { id:'min', cls:'t-min', nombre:'Mínimo',    dial:'rpm', aguja:false, segs:false,
-    face:['#000','#000'], paso:0, mayor:0, div:1000, unidad:'' },
-];
-let TH=THEMES[0];
-
-const topeDial = () => TH.dial==='speed' ? GEAR_TOP[GEAR_TOP.length-1] : MAX_RPM;
-const ang = v => A0+(Math.max(0,Math.min(v,topeDial()))/topeDial())*(A1-A0);
-const pt  = (a,rad)=>[CX+rad*Math.sin(a*Math.PI/180), CY-rad*Math.cos(a*Math.PI/180)];
-function arc(f,t,rad){
-  const [x1,y1]=pt(ang(f),rad),[x2,y2]=pt(ang(t),rad);
-  return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${rad} ${rad} 0 ${(ang(t)-ang(f))>180?1:0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+const pt=(a,rad,cx=CX,cy=CY)=>[cx+rad*Math.sin(a*Math.PI/180), cy-rad*Math.cos(a*Math.PI/180)];
+function arcP(f,t,max,rad,cx=CX,cy=CY){
+  const a1=A0+(Math.max(0,Math.min(f,max))/max)*(A1-A0);
+  const a2=A0+(Math.max(0,Math.min(t,max))/max)*(A1-A0);
+  const [x1,y1]=pt(a1,rad,cx,cy), [x2,y2]=pt(a2,rad,cx,cy);
+  return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${rad} ${rad} 0 ${(a2-a1)>180?1:0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
-// Valor de la magnitud que manda, y a partir de qué valor empieza la zona roja
-const valDial = () => TH.dial==='speed' ? S.speed : S.rpm;
-const rojoDial = () => TH.dial==='speed' ? GEAR_TOP[GEAR_TOP.length-1]*0.86 : S.engine.redline;
+const angOf=(v,max)=>A0+(Math.max(0,Math.min(v,max))/max)*(A1-A0);
+const topeRpm=()=>Math.ceil(S.engine.redline/1000)*1000;
+const topeVel=()=>GEAR_TOP[GEAR_TOP.length-1];
+
+/* Marcas de una esfera redonda, reutilizadas por dos cuadros distintos */
+function ticks(max,paso,mayor,div,rojo,rr,fs,cx=CX,cy=CY){
+  let h='';
+  for(let v=0;v<=max;v+=paso){
+    const es=v%mayor===0, a=angOf(v,max);
+    const [x1,y1]=pt(a,rr,cx,cy), [x2,y2]=pt(a,es?rr-22:rr-11,cx,cy);
+    h+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+        class="tick${es?'':' minor'}" stroke-width="${es?3.5:1.4}" ${v>=rojo?'stroke="var(--red)"':''}/>`;
+    if(es){ const [tx,ty]=pt(a,rr-42,cx,cy);
+      h+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" class="num" font-size="${fs}"
+          ${v>=rojo?'fill="var(--red)"':''}>${Math.round(v/div)}</text>`; }
+  }
+  return h;
+}
+const aguja=(cls,cx=CX,cy=CY,l=154)=>`<g class="${cls}" style="transform-box:view-box;transform-origin:${cx}px ${cy}px">
+  <path d="M${cx} ${cy-l} L${cx+5} ${cy} L${cx-5} ${cy} Z" fill="var(--red)"/>
+  <circle cx="${cx}" cy="${cy}" r="12" fill="#0D0C0B" stroke="var(--line)" stroke-width="2"/>
+  <circle cx="${cx}" cy="${cy}" r="4" fill="var(--ivory)"/></g>`;
+
+/* ===================== LOS CUATRO CUADROS ===================== */
+const CUADROS=[
+{
+  id:'clasico', nombre:'Clásico', cls:'c-clasico', ancho:'min(96vw,780px)', anchoFull:'min(96vw,1150px)',
+  build(){
+    const mr=topeRpm(), rojo=S.engine.redline, mv=topeVel(), r=150;
+    wrap.innerHTML=`<svg viewBox="0 0 800 400">
+      <circle cx="200" cy="200" r="188" fill="#131110" stroke="var(--line)" stroke-width="2"/>
+      <circle cx="600" cy="200" r="188" fill="#131110" stroke="var(--line)" stroke-width="2"/>
+      <path d="${arcP(0,mr,mr,r+16,200)}" fill="none" stroke="var(--line)" stroke-width="8"/>
+      <path d="${arcP(rojo,mr,mr,r+16,200)}" fill="none" stroke="#4A1810" stroke-width="8"/>
+      <path id="ar" fill="none" stroke="var(--amber)" stroke-width="8"/>
+      ${ticks(mr,250,1000,1000,rojo,r,28,200)}
+      <text class="lbl" x="200" y="128" font-size="12">x1000 r/min</text>
+      <path d="${arcP(0,mv,mv,r+16,600)}" fill="none" stroke="var(--line)" stroke-width="8"/>
+      <path id="av" fill="none" stroke="var(--amber)" stroke-width="8"/>
+      ${ticks(mv,10,40,1,mv*2,r,22,600)}
+      <text class="lbl" x="600" y="128" font-size="12">km/h</text>
+      <text class="num" id="rd" x="200" y="272" font-size="26" fill="var(--ivory-dim)">0</text>
+      <text class="num" id="sd" x="600" y="272" font-size="30" fill="var(--ivory)">0</text>
+      ${aguja('n1',200)} ${aguja('n2',600)}
+      <text class="num" id="gr" x="400" y="200" font-size="132" fill="var(--amber)">N</text>
+      <text class="lbl" x="400" y="272" font-size="12">marcha</text>
+    </svg>`;
+    this.ar=$('#ar'); this.av=$('#av'); this.gr=$('#gr'); this.rd=$('#rd'); this.sd=$('#sd');
+    this.n1=wrap.querySelector('.n1'); this.n2=wrap.querySelector('.n2');
+  },
+  update(){
+    const mr=topeRpm(), mv=topeVel();
+    this.n1.style.transform=`rotate(${angOf(S.rpm,mr).toFixed(1)}deg)`;
+    this.n2.style.transform=`rotate(${angOf(S.speed,mv).toFixed(1)}deg)`;
+    this.ar.setAttribute('d', S.rpm>80?arcP(0,S.rpm,mr,166,200):'');
+    this.ar.setAttribute('stroke', S.rpm>=S.engine.redline?'var(--red)':'var(--amber)');
+    this.av.setAttribute('d', S.speed>1?arcP(0,S.speed,mv,166,600):'');
+    this.rd.textContent=Math.round(S.rpm); this.sd.textContent=Math.round(S.speed);
+    this.gr.textContent=marcha();
+  }
+},
+{
+  id:'confort', nombre:'Confort', cls:'c-confort', ancho:'min(96vw,780px)', anchoFull:'min(96vw,1150px)',
+  build(){
+    const mr=topeRpm(), mv=topeVel(), r=152;
+    wrap.innerHTML=`<svg viewBox="0 0 800 400">
+      <path d="${arcP(0,mr,mr,r,200)}" fill="none" stroke="var(--line)" stroke-width="24" stroke-linecap="round"/>
+      <path id="ar" fill="none" stroke="var(--amber)" stroke-width="24" stroke-linecap="round"/>
+      <path d="${arcP(S.engine.redline,mr,mr,r,200)}" fill="none" stroke="#5A1A12" stroke-width="6"/>
+      <path d="${arcP(0,mv,mv,r,600)}" fill="none" stroke="var(--line)" stroke-width="24" stroke-linecap="round"/>
+      <path id="av" fill="none" stroke="var(--ivory)" stroke-width="24" stroke-linecap="round"/>
+      <text class="num" id="rd" x="200" y="186" font-size="86" fill="var(--ivory)">0</text>
+      <text class="lbl" x="200" y="242" font-size="13">r/min</text>
+      <text class="num" id="sd" x="600" y="186" font-size="98" fill="var(--ivory)">0</text>
+      <text class="lbl" x="600" y="242" font-size="13">km/h</text>
+      <text class="num" id="gr" x="400" y="176" font-size="96" fill="var(--amber)">N</text>
+      <text class="lbl" x="400" y="238" font-size="12">marcha</text>
+      <text class="lbl" id="cg" x="400" y="300" font-size="12">carga 0%</text>
+    </svg>`;
+    this.ar=$('#ar'); this.av=$('#av'); this.rd=$('#rd'); this.sd=$('#sd');
+    this.gr=$('#gr'); this.cg=$('#cg');
+  },
+  update(){
+    const mr=topeRpm(), mv=topeVel();
+    this.ar.setAttribute('d', S.rpm>80?arcP(0,S.rpm,mr,152,200):'');
+    this.ar.setAttribute('stroke', S.rpm>=S.engine.redline?'var(--red)':'var(--amber)');
+    this.av.setAttribute('d', S.speed>1?arcP(0,S.speed,mv,152,600):'');
+    this.rd.textContent=Math.round(S.rpm); this.sd.textContent=Math.round(S.speed);
+    this.gr.textContent=marcha(); this.cg.textContent='carga '+Math.round(S.demand*100)+'%';
+  }
+},
+{
+  id:'track', nombre:'Track', cls:'c-track', ancho:'min(94vw,620px)',
+  build(){
+    let b=''; for(let i=0;i<32;i++) b+=`<i></i>`;
+    wrap.innerHTML=`<div class="tk">
+      <div class="tkbar">${b}</div>
+      <div class="tkmid">
+        <div class="tkside"><b id="sp">0</b><span>km/h</span></div>
+        <div class="tkgear" id="gr">N</div>
+        <div class="tkside"><b id="rp">0</b><span>r/min</span></div>
+      </div>
+      <div class="tkfoot"><span id="lg">G 0.00</span><span id="lc">CARGA 0%</span><span id="ls">CAMBIO —</span></div>
+    </div>`;
+    this.b=[...wrap.querySelectorAll('.tkbar i')];
+    this.sp=$('#sp'); this.gr=$('#gr'); this.rp=$('#rp');
+    this.lg=$('#lg'); this.lc=$('#lc'); this.ls=$('#ls');
+  },
+  update(){
+    const f=S.rpm/S.engine.redline, n=this.b.length;
+    for(let i=0;i<n;i++){
+      const x=(i+1)/n;
+      this.b[i].className = x>f ? '' : (x>0.92?'r':(x>0.78?'a':'v'));
+    }
+    this.sp.textContent=Math.round(S.speed);
+    this.rp.textContent=Math.round(S.rpm);
+    this.gr.textContent=marcha();
+    this.lg.textContent='G '+Math.hypot(S.gLon,S.gLat).toFixed(2);
+    this.lc.textContent='CARGA '+Math.round(S.demand*100)+'%';
+    this.ls.textContent='MARCHA '+(S.speed<3?'—':S.gear+'/'+GEAR_TOP.length);
+  }
+},
+{
+  id:'gforce', nombre:'Fuerzas G', cls:'c-gforce', ancho:'min(46vh,420px)',
+  build(){
+    const r1=62,r2=124,r3=178;
+    wrap.innerHTML=`<svg viewBox="0 0 400 400">
+      <circle cx="200" cy="200" r="190" fill="#0B0F14" stroke="var(--line)" stroke-width="2"/>
+      <circle cx="200" cy="200" r="${r1}" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <circle cx="200" cy="200" r="${r2}" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <circle cx="200" cy="200" r="${r3}" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <line x1="200" y1="14" x2="200" y2="386" stroke="var(--line)" stroke-width="1"/>
+      <line x1="14" y1="200" x2="386" y2="200" stroke="var(--line)" stroke-width="1"/>
+      <text class="lbl" x="248" y="${200-r1+4}" font-size="11">0.5</text>
+      <text class="lbl" x="248" y="${200-r2+4}" font-size="11">1.0</text>
+      <text class="lbl" x="248" y="${200-r3+4}" font-size="11">1.5</text>
+      <text class="lbl" x="200" y="34" font-size="11">ACELERA</text>
+      <text class="lbl" x="200" y="374" font-size="11">FRENA</text>
+      <circle id="pk" cx="200" cy="200" r="0" fill="none" stroke="var(--amber-deep)" stroke-width="1.5"/>
+      <circle id="dot" cx="200" cy="200" r="15" fill="var(--red)" opacity=".92"/>
+      <text class="num" id="gv" x="200" y="200" font-size="26" fill="var(--ivory)"></text>
+      </svg>
+      <div class="ro gro"><div class="big2" id="sp">0</div><div class="u">km/h · <span id="gr">N</span></div></div>`;
+    this.dot=$('#dot'); this.pk=$('#pk'); this.gv=$('#gv'); this.sp=$('#sp'); this.gr=$('#gr');
+  },
+  update(){
+    const esc=124;                       // 124 px = 1 g
+    const x=200+Math.max(-180,Math.min(180,S.gLat*esc));
+    const y=200-Math.max(-180,Math.min(180,S.gLon*esc));
+    this.dot.setAttribute('cx',x.toFixed(1)); this.dot.setAttribute('cy',y.toFixed(1));
+    this.pk.setAttribute('r',(S.gPk*esc).toFixed(1));
+    this.gv.textContent=Math.hypot(S.gLon,S.gLat).toFixed(2)+' g';
+    this.gv.setAttribute('x',(x+26).toFixed(1)); this.gv.setAttribute('y',y.toFixed(1));
+    this.sp.textContent=Math.round(S.speed); this.gr.textContent=marcha();
+  }
+},
+];
+let CU=CUADROS[0];
+const marcha=()=>!S.on?'N':(S.speed<3?'N':String(S.gear));
 
 function drawDial(){
-  const rojo=rojoDial(), tope=topeDial();
-  document.body.className=TH.cls;
-  $('#fc0').setAttribute('stop-color',TH.face[0]);
-  $('#fc1').setAttribute('stop-color',TH.face[1]);
-  $('#needle').style.display = TH.aguja?'':'none';
-  $('#dialLbl').textContent = TH.unidad;
-  $('#faceOuter').style.display = TH.id==='min'?'none':'';
-  $('#faceInner').style.display = TH.id==='min'?'none':'';
-  $('#arcBg').setAttribute('d',arc(0,tope,R+16));
-  $('#arcRed').setAttribute('d',arc(rojo,tope,R+16));
-  $('#arcRed').setAttribute('stroke', TH.id==='min'?'transparent':'#4A1810');
-
-  // marcas y números
-  const g=$('#ticks'); g.innerHTML='';
-  if(TH.paso) for(let r=0;r<=tope;r+=TH.paso){
-    const mayor=r%TH.mayor===0, a=ang(r), [x1,y1]=pt(a,R), [x2,y2]=pt(a,mayor?R-22:R-11);
-    const l=document.createElementNS(NS,'line');
-    l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
-    l.setAttribute('class','tick'+(mayor?'':' minor'));
-    l.setAttribute('stroke-width',mayor?3.5:1.4);
-    if(r>=rojo) l.setAttribute('stroke','var(--red)');
-    g.appendChild(l);
-    if(mayor){
-      const [tx,ty]=pt(a,R-44);
-      const t=document.createElementNS(NS,'text');
-      t.setAttribute('x',tx);t.setAttribute('y',ty);t.setAttribute('class','num');
-      t.setAttribute('font-size',TH.dial==='speed'?24:30); t.textContent=Math.round(r/TH.div);
-      if(r>=rojo) t.setAttribute('fill','var(--red)');
-      g.appendChild(t);
-    }
-  }
-
-  // barra de segmentos del estilo digital
-  const sg=$('#segs'); sg.innerHTML='';
-  if(TH.segs){
-    for(let i=0;i<44;i++){
-      const v0=tope*i/44, v1=tope*(i+0.62)/44;
-      const p=document.createElementNS(NS,'path');
-      p.setAttribute('d',arc(v0,v1,R-6)); p.setAttribute('fill','none');
-      p.setAttribute('stroke-width',26); p.setAttribute('stroke','var(--line)');
-      p.dataset.v=v0; sg.appendChild(p);
-    }
-  }
+  document.body.className=CU.cls+(S.full?' full':'');
+  wrap.style.maxWidth=(S.full&&CU.anchoFull)?CU.anchoFull:CU.ancho;
+  CU.build();
 }
-
 function renderUI(){
-  const v=valDial(), rojo=rojoDial();
-  if(TH.aguja) $('#needle').setAttribute('transform',`rotate(${ang(v).toFixed(2)} ${CX} ${CY})`);
-  $('#arcVal').setAttribute('d', v>topeDial()*0.008 ? arc(0,v,R+16) : '');
-  $('#arcVal').setAttribute('stroke', v>=rojo?'var(--red)':'var(--amber)');
-  if(TH.segs){
-    const hijos=$('#segs').children;
-    for(let i=0;i<hijos.length;i++){
-      const sv=+hijos[i].dataset.v;
-      hijos[i].setAttribute('stroke', sv>v ? 'var(--line)' : (sv>=rojo?'var(--red)':'var(--amber)'));
-    }
-  }
-  $('#dialBig').textContent = TH.grande==='rpm' ? Math.round(S.rpm) : '';
-  speedEl.textContent=Math.round(S.speed);
-  gearEl.textContent=!S.on?'N':(S.speed<3?'N':String(S.gear));
-
+  CU.update();
   const frac=S.rpm/S.engine.redline, lit=Math.max(0,Math.floor((frac-.55)/.45*10)), lim=frac>=.985&&S.on;
   leds.forEach((d,i)=>{
     d.className='led';
@@ -642,13 +827,12 @@ function renderUI(){
   });
 }
 
-// botones de estilo
 const tseg=$('#themeSeg');
-THEMES.forEach(t=>{
+CUADROS.forEach(c=>{
   const b=document.createElement('button');
-  b.textContent=t.nombre; b.setAttribute('aria-pressed', t.id===TH.id);
-  b.onclick=()=>{ TH=t; drawDial();
-    [...tseg.children].forEach(c=>c.setAttribute('aria-pressed','false'));
+  b.textContent=c.nombre; b.setAttribute('aria-pressed', c.id===CU.id);
+  b.onclick=()=>{ CU=c; drawDial();
+    [...tseg.children].forEach(x=>x.setAttribute('aria-pressed','false'));
     b.setAttribute('aria-pressed','true'); };
   tseg.appendChild(b);
 });
@@ -668,7 +852,7 @@ ENGINES.forEach(e=>{
   b.className='eng'; b.setAttribute('aria-pressed', e.id===S.engine.id);
   b.innerHTML=`<span class="code">${e.code}</span><span class="desc">${e.desc}</span>`;
   b.onclick=()=>{
-    S.engine=e; S.rpm=e.whine?400:e.idle; drawDial();
+    S.engine=e; S.rpm=e.whine?400:e.idle; S.sp=shiftPoints(e); drawDial();
     [...list.children].forEach(c=>c.setAttribute('aria-pressed','false'));
     b.setAttribute('aria-pressed','true');
     if(S.on) pushParams(true);
@@ -709,6 +893,15 @@ const up=ev=>{ev.preventDefault(); S.revHold=false; rev.classList.remove('active
 
 $('#vol').oninput=e=>{ S.vol=e.target.value/100; $('#volVal').textContent=e.target.value;
   if(outGain&&S.on) outGain.gain.setTargetAtTime(S.vol,ctx.currentTime,.05); };
+function setFull(v){
+  S.full=v; drawDial();
+  try{ if(v && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+       else if(!v && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); }catch(e){}
+}
+$('#fsBtn').onclick=()=>setFull(true);
+$('#fsExit').onclick=()=>setFull(false);
+
+$('#masa').oninput=e=>{ S.masa=+e.target.value; $('#masaV').textContent=S.masa; };
 $('#esc').oninput=e=>{ S.esc=e.target.value/100; $('#escVal').textContent=e.target.value; if(S.on) pushParams(false); };
 
 function setStatus(h){ statusEl.innerHTML=h; }
@@ -727,6 +920,20 @@ function setResp(r){
     ? 'Velocidad: fluido, sigue al velocímetro. No reacciona al pie si no ganas velocidad.'
     : 'Acelerador: reacciona al pie, pero hereda el retardo del GPS.');
 }
+function setPend(v){
+  S.usarPend=v; if(!v) S.pend=0;
+  $('#pOn').setAttribute('aria-pressed',v); $('#pOff').setAttribute('aria-pressed',!v);
+  diag(v?'Pendiente activada: cuesta arriba sonará a esfuerzo aunque no ganes velocidad. La altitud GPS es ruidosa.'
+        :'Pendiente desactivada: la carga solo mira aceleración y resistencias.');
+}
+$('#logBtn').onclick=()=>{
+  S.logOn=!S.logOn; S.log=[];
+  $('#logBtn').setAttribute('aria-pressed',S.logOn);
+  diag(S.logOn?'Registro activado: aquí saldrán los últimos cambios de marcha con sus umbrales.':'Registro apagado.');
+};
+$('#pOn').onclick=()=>setPend(true);
+$('#pOff').onclick=()=>setPend(false);
+
 $('#rVel').onclick=()=>setResp('vel');
 $('#rGas').onclick=()=>setResp('gas');
 
@@ -739,7 +946,7 @@ function startSpeedSource(){
   if(S.mode==='manual'){ S.targetSpeed=+$('#mspd').value; setStatus('Modo manual: mueve el deslizador.'); return; }
   if(!navigator.geolocation){ setStatus('Sin GPS en este navegador. Usa <b>Manual</b>.'); return; }
   setStatus('Buscando señal GPS…');
-  S.gps={t:0,v:0,a:0,hz:0,lat:null,lon:null};
+  S.gps={t:0,v:0,a:0,hz:0,lat:null,lon:null,alt:null}; S.pend=0;
   S.watchId=navigator.geolocation.watchPosition(pos=>{
     const ahora=performance.now()/1000, g=S.gps;
     const la=pos.coords.latitude, lo=pos.coords.longitude;
@@ -760,6 +967,24 @@ function startSpeedSource(){
         g.hz=g.hz?g.hz*0.7+(1/dt)*0.3:1/dt;
       }
     }
+    // Pendiente: la altitud del GPS es muy ruidosa, así que va filtrada
+    // fuerte, solo por encima de 20 km/h y limitada a ±15%.
+    const alt=pos.coords.altitude;
+    if(S.usarPend && alt!=null && !isNaN(alt) && g.alt!=null && v>20){
+      const dist=(v/3.6)*(ahora-g.t);
+      if(dist>3){
+        const p=Math.max(-.15,Math.min(.15,(alt-g.alt)/dist));
+        S.pend=S.pend*.75+p*.25;
+      }
+    }
+    // Giro: con el rumbo y la velocidad sale la G lateral. a_lat = v · ω
+    const rb=pos.coords.heading;
+    if(rb!=null && !isNaN(rb) && S.rumbo!=null && ahora-g.t>0.05 && v>12){
+      let d=rb-S.rumbo; while(d>180)d-=360; while(d<-180)d+=360;
+      S.giro=S.giro*.6+(d*Math.PI/180/(ahora-g.t))*.4;
+    }
+    if(rb!=null && !isNaN(rb)) S.rumbo=rb;
+    if(alt!=null && !isNaN(alt)) g.alt=alt;
     g.v=v; g.t=ahora; g.lat=la; g.lon=lo;
     setStatus(`GPS · <b>${v.toFixed(0)} km/h</b> · ${g.a>=0?'+':''}${g.a.toFixed(1)} km/h/s · `
       +`<b>${g.hz.toFixed(1)} lecturas/s</b> · precisión ${Math.round(pos.coords.accuracy)} m`);
