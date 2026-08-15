@@ -656,7 +656,11 @@ function physics(dt){
     // de par de ESTE motor. Con poca carga cambia pronto; a fondo, en el punto
     // donde la marcha siguiente empuja más que la actual.
     const opt = S.sp[Math.min(S.sp.length-1,S.gear-1)];
-    let subir = Math.max(.30, .38+(opt-.38)*S.demand + S.agre);
+    // Ojo: el deslizador de agresividad desapareció al revertir el menú de
+    // ajustes, así que S.agre ya no existe. Sumar undefined convertía el
+    // umbral en NaN, y una comparación contra NaN siempre es falsa: por eso
+    // no subía de 1ª nunca. Se queda tolerante por si vuelve el deslizador.
+    let subir = Math.max(.30, .38+(opt-.38)*S.demand + (S.agre||0));
     const bajarBase = .19+.32*S.demand;
     // Una automática no mete la 1ª en marcha: solo casi parado. Sin esta
     // regla, el guardia anti-vaivén tenía que proteger la vuelta a 1ª y
