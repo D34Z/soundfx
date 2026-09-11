@@ -170,11 +170,11 @@ body.c-muscle{--ink:#050505;--ivory:#F5F5F3;--ivory-dim:#8A8A88;--amber:#E8A020;
       <div class="row"><label for="vol">Volumen</label>
         <input type="range" id="vol" min="0" max="100" value="70"><span class="val" id="volVal">70</span></div>
       <div class="row"><label for="esc">Escape</label>
-        <input type="range" id="esc" min="0" max="100" value="55"><span class="val" id="escVal">55</span></div>
+        <input type="range" id="esc" min="0" max="100" value="35"><span class="val" id="escVal">35</span></div>
       <div class="row"><label for="grn">Grano</label>
-        <input type="range" id="grn" min="0" max="60" value="10"><span class="val" id="grnV">10</span></div>
+        <input type="range" id="grn" min="0" max="60" value="1"><span class="val" id="grnV">1</span></div>
       <div class="row"><label for="air">Aire</label>
-        <input type="range" id="air" min="0" max="150" value="40"><span class="val" id="airV">40</span></div>
+        <input type="range" id="air" min="0" max="150" value="0"><span class="val" id="airV">0</span></div>
       <div class="row"><label>Pops &amp; bangs</label>
         <div class="seg" style="flex:1" id="pabSeg"></div></div>
       <div class="row"><label for="masa">Masa kg</label>
@@ -242,8 +242,8 @@ const FIRE = {
 };
 
 const ENGINES = [
-  { id:'v8x', code:'V8', desc:'Cigüeñal cruzado — muscle car', fire:FIRE.v8cross,
-    idle:825, redline:6400, pipe:[62,70], fb:.74, damp:.10, decay:.0042, drive:2.6, tone:1800, intake:.10, bark:1.15 , gr:1.6, ar:0.5, jit:0.22, tq:{rP:.42,wLo:.60,wHi:.90,low:.42,rLow:.22}},
+  { id:'v8x', code:'LS3', desc:'V8 americano de escape libre', fire:FIRE.v8cross,
+    idle:825, redline:6400, pipe:[311,400], fb:0.633, damp:0.411, decay:0.00277, drive:3.74, tone:15267, intake:.10, bark:1.46 , gr:6.11, ar:4.02, jit:0.16, tq:{rP:.42,wLo:.60,wHi:.90,low:.42,rLow:.22}},
   { id:'v8cam', code:'V8 CAM', desc:'Leva radical — ralentí lopeado', fire:FIRE.v8cross,
     idle:1000, redline:7200, pipe:[100,116], fb:.68, damp:.20, decay:.0050, drive:3.0, tone:1900, intake:.19, bark:1.35, cam:1, pop:.03 , gr:1.8, ar:0.55, jit:0.26, tq:{rP:.70,wLo:.42,wHi:.62,low:.12,rLow:.58}},
   { id:'hemi57', code:'5.7', desc:'HEMI de 5.7 — empuje grave', fire:FIRE.v8cross,
@@ -260,31 +260,31 @@ const ENGINES = [
     intake:.14, bark:1.10, pop:.025, gr:2.5, ar:2.1, tq:{rP:.42,wLo:.56,wHi:.80,low:.34,rLow:.24} },
   { id:'v8f', code:'V8 F', desc:'Cigüeñal plano — superdeportivo', fire:FIRE.v8flat,
     idle:950, redline:8000, pipe:[150,172], fb:.68, damp:.30, decay:.0026, drive:3.1, tone:2600, intake:.09, bark:1.00 , gr:1.6, ar:0.40, jit:0.20, tq:{rP:.62,wLo:.58,wHi:.72,low:.30,rLow:.34}},
-  { id:'v12', code:'V12', desc:'Aullido de doce cilindros', fire:FIRE.v12,
-    idle:1000, redline:8000, pipe:[132,148], fb:.63, damp:.5, decay:.0019, drive:2.2, tone:5600, intake:.07, bark:.85 , gr:1.7, ar:1.6, tq:{rP:.70,wLo:.62,wHi:.66,low:.28,rLow:.34}},
+  { id:'v12', code:'V12', desc:'V12 atmosférico de superdeportivo', fire:FIRE.v12,
+    idle:1000, redline:8500, pipe:[316,399], fb:0.545, damp:0.483, decay:0.00535, drive:2.40, tone:5200, intake:.07, bark:1.15 , gr:6.11, ar:2.57, jit:0.19, tq:{rP:.70,wLo:.62,wHi:.66,low:.28,rLow:.34}},
   { id:'v10', code:'V10', desc:'Grito metálico de diez', fire:FIRE.v10,
     idle:900, redline:8000, pipe:[118,131], fb:.66, damp:.46, decay:.0021, drive:2.9, tone:5000, intake:.08, bark:.95 , gr:1.9, ar:1.7, tq:{rP:.68,wLo:.58,wHi:.68,low:.26,rLow:.34}},
-  { id:'v6', code:'VR38', desc:'3.8 V6 biturbo — grave y tenso', fire:FIRE.v6,
-    idle:750, redline:7000, pipe:[76,80], fb:.78, damp:.26, decay:.0038, drive:2.9, tone:2600,
-    intake:.15, bark:1.30, turbo:.7, bov:1.4, pop:.025, jit:0.22, gr:2.4, ar:1.9,
-    tq:{rP:.42,wLo:.30,wHi:.70,low:.24,rLow:.24} },
-  { id:'i6', code:'RB26', desc:'2.6 seis en línea biturbo', fire:FIRE.i6,
-    idle:850, redline:8000, pipe:[88,88], fb:.76, damp:.30, decay:.0026, drive:2.6, tone:3400,
-    intake:.13, bark:1.05, turbo:.8, bov:1.2, pop:.02, jit:0.16, gr:2.2, ar:1.7,
+  { id:'v6', code:'RS4', desc:'2.7 V6 biturbo — grave y contenido', fire:FIRE.v6,
+    idle:760, redline:7200, pipe:[68,76], fb:.74, damp:.30, decay:.0036, drive:2.5, tone:2400,
+    intake:.12, bark:1.12, pop:.010, jit:0.19, gr:2.2, ar:1.5,
+    tq:{rP:.40,wLo:.34,wHi:.72,low:.26,rLow:.24} },
+  { id:'i6', code:'RB26', desc:'2.6 seis en línea — GT-R', fire:FIRE.i6,
+    idle:850, redline:8000, pipe:[244,273], fb:.70, damp:.34, decay:.0028, drive:3.6, tone:13000,
+    intake:.10, bark:.88, pop:.006, jit:0.13, gr:5.0, ar:1.6,
     tq:{rP:.55,wLo:.38,wHi:.66,low:.20,rLow:.30} },
-  { id:'i4t', code:'1.8T', desc:'1.8 de 20 válvulas — turbo pequeño y silbón', fire:FIRE.i4,
-    idle:820, redline:6500, pipe:[104,104], fb:.72, damp:.34, decay:.0030, drive:2.6, tone:3000,
-    intake:.12, bark:1.00, bov:1.6, pop:.012, gr:2.4, ar:2.0, jit:0.26, tq:{rP:.26,wLo:.20,wHi:.54,low:.16,rLow:.20} },
+  { id:'i4t', code:'K6A', desc:'Tres cilindros de kei car muy revolucionado', fire:FIRE.i4,
+    idle:850, redline:8500, pipe:[244,273], fb:.72, damp:.55, decay:.0030, drive:3.6, tone:13000,
+    intake:.12, bark:1.00, pop:.012, gr:6.5, ar:1.6, jit:0.26, tq:{rP:.26,wLo:.20,wHi:.54,low:.16,rLow:.20} },
   { id:'bxr', code:'STI', desc:'Bóxer 4 turbo de colectores desiguales', fire:FIRE.boxer,
-    idle:820, redline:6700, pipe:[138,244], fb:.62, damp:.26, decay:.0046, drive:2.6, tone:2900,
-    intake:.17, bark:1.35, bov:1.3, pop:.03, gr:2.6, ar:3.0,
+    idle:820, redline:6700, pipe:[134,244], fb:.55, damp:.30, decay:.0046, drive:2.6, tone:3600,
+    intake:.17, bark:1.35, bov:1.3, pop:.03, gr:2.6, ar:2.0,
     tq:{rP:.40,wLo:.30,wHi:.66,low:.22,rLow:.22} },
   { id:'gt3', code:'GT3', desc:'Bóxer 6 atmosférico de 9.000 rpm', fire:FIRE.b6,
     idle:1000, redline:9000, pipe:[112,127], fb:.62, damp:.52, decay:.0017, drive:3.2, tone:6200,
     intake:.17, bark:.95, pop:.008, gr:2.3, ar:1.9, tq:{rP:.74,wLo:.60,wHi:.60,low:.22,rLow:.40} },
   { id:'tcr', code:'TCR', desc:'2.0 turbo de tracción delantera', fire:FIRE.i4,
     idle:800, redline:6800, pipe:[92,92], fb:.75, damp:.30, decay:.0034, drive:3.0, tone:2900,
-    intake:.16, bark:1.15, bov:1.0, pop:.055, gr:2.4, ar:2.0, jit:0.28, tq:{rP:.30,wLo:.22,wHi:.58,low:.20,rLow:.22} },
+    intake:.16, bark:1.15, pop:.055, gr:2.4, ar:2.0, jit:0.28, tq:{rP:.30,wLo:.22,wHi:.58,low:.20,rLow:.22} },
 ];
 
 /* ===========================================================
@@ -381,9 +381,9 @@ class EngineCore{
         // crepita mucho más que si venías de crucero.
         if(this.thr<0.12 && this.rpm>2600){
           const pab=this.pab, reserva=Math.min(1,this.carLenta*1.6);
-          const prob=(e.pop!==undefined?e.pop:0.015)*(1+pab*7)*(0.25+reserva);
+          const prob=(e.pop!==undefined?e.pop:0.015)*(1+pab*2.2)*(0.25+reserva);
           if(Math.random()<prob){
-            this.amp[b]*= 1.6+Math.random()*1.1 + pab*reserva*(2.2+Math.random()*3.4);
+            this.amp[b]*= 1.6+Math.random()*1.1 + pab*reserva*(4.2+Math.random()*6.3);
             this.pops=1;
           }
         }
@@ -547,8 +547,8 @@ function cargaReal(e,accel,vKmh,r,gear,pend){
 }
 const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevSpeed:0,
   rpm:800, targetRpm:800, throttle:0, revHold:false, gear:1, shiftT:0,
-  vol:.7, esc:.55, watchId:null, lastT:0, blipT:0, lockT:0,
-  resp:'vel', demand:0, carga:0, masa:1900, full:false, pab:0, grain:.10, air:.40,
+  vol:.7, esc:.35, watchId:null, lastT:0, blipT:0, lockT:0,
+  resp:'vel', demand:0, carga:0, masa:1900, full:false, pab:0, grain:.01, air:0,
   gLon:0, gLat:0, gPk:0, rumbo:null, giro:0, antiUp:0, log:[], logOn:false, pend:0, usarPend:false, sp:null,
   gps:{t:0,v:0,a:0,hz:0,lat:null,lon:null} };
 
@@ -707,7 +707,8 @@ function physics(dt){
       // Derivar una señal que llega una vez por segundo es lo que da tirones,
       // así que aquí sencillamente no se deriva.
       thr=.22+.72*pos;
-      if(accel<-3) thr*=.55;           // solo frenadas claras, y sin cortar
+      if(accel<-1) thr*=.45;           // levantar el pie
+      if(accel<-3) thr*=.28;           // frenada clara: retención de verdad
     } else {
       thr=Math.max(.04, S.carga);    // gas real, por dinámica inversa
       if(accel<-1.5) thr=0;            // retención: se corta el gas
