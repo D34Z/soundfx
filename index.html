@@ -550,7 +550,7 @@ function cargaReal(e,accel,vKmh,r,gear,pend){
 const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevSpeed:0,
   rpm:800, targetRpm:800, throttle:0, revHold:false, gear:1, shiftT:0,
   vol:.7, esc:.35, watchId:null, lastT:0, blipT:0, lockT:0,
-  resp:'vel', demand:0, carga:0, fixes:0, masa:1900, full:false, pab:0, grain:.01, air:0,
+  resp:'vel', demand:0, carga:0, fixes:0, quietas:0, onPos:null, onErr:null, armadoT:0, rearmes:0, masa:1900, full:false, pab:0, grain:.01, air:0,
   gLon:0, gLat:0, gPk:0, rumbo:null, giro:0, antiUp:0, log:[], logOn:false, pend:0, usarPend:false, sp:null,
   gps:{t:0,v:0,a:0,hz:0,lat:null,lon:null} };
 
@@ -1129,8 +1129,9 @@ function startSpeedSource(){
   if(S.mode==='manual'){ S.targetSpeed=+$('#mspd').value; setStatus('Modo manual: mueve el deslizador.'); return; }
   if(!navigator.geolocation){ setStatus('Sin GPS en este navegador. Usa <b>Manual</b>.'); return; }
   setStatus('Buscando señal GPS…');
+  diagGPS();
   S.gps={t:0,v:0,a:0,hz:0,lat:null,lon:null,alt:null}; S.pend=0; S.fixes=0;
-  S.watchId=navigator.geolocation.watchPosition(pos=>{
+  S.onPos=pos=>{
     const ahora=performance.now()/1000, g=S.gps;
     const la=pos.coords.latitude, lo=pos.coords.longitude;
     let v;
@@ -1168,17 +1169,29 @@ function startSpeedSource(){
     }
     if(rb!=null && !isNaN(rb)) S.rumbo=rb;
     if(alt!=null && !isNaN(alt)) g.alt=alt;
+    if(g.lat!=null && Math.abs(la-g.lat)<1e-7 && Math.abs(lo-g.lon)<1e-7) S.quietas=(S.quietas||0)+1; else S.quietas=0;
+    if(S.fixes===0) diag('Ubicación recibida: GPS funcionando.');
     g.v=v; g.t=ahora; g.lat=la; g.lon=lo; S.fixes++;
+    if(S.quietas>=8 && v<1) diag('Llegan posiciones pero siempre la misma (precisión '+Math.round(pos.coords.accuracy)+' m): este dispositivo no tiene GPS real o no se está moviendo.');
     setStatus(`GPS · <b>${v.toFixed(0)} km/h</b> · ${g.a>=0?'+':''}${g.a.toFixed(1)} km/h/s · `
       +`<b>${g.hz.toFixed(1)} lecturas/s</b> · ${S.fixes} lecturas · precisión ${Math.round(pos.coords.accuracy)} m`);
-  },err=>{
+  };
+  S.onErr=err=>{
+    // Un fallo puntual con lecturas ya llegando no es un problema: se ignora
+    if(err.code===2 && S.fixes>0) return;
     if(err.code===3){           // caducó esperando una posición nueva
       setStatus(`GPS lento (sin lectura en 30 s). Reintentando… ${S.fixes} lecturas hasta ahora.`);
-      if(S.mode==='gps' && S.on){ stopSpeedSource(); setTimeout(()=>{ if(S.mode==='gps'&&S.on) startSpeedSource(); }, 1200); }
+      if(S.mode==='gps' && S.on) setTimeout(()=>{ if(S.mode==='gps'&&S.on) armarWatch(); }, 1000);
+    } else if(err.code===1){
+      setStatus('Ubicación <b>DENEGADA</b> para esta web. Actívala en los permisos del navegador (icono junto a la dirección) y recarga.');
+    } else if(err.code===2){
+      setStatus('El dispositivo no puede obtener posición (sin GPS o sin señal). '+S.fixes+' lecturas.');
     } else {
       setStatus(`GPS no disponible (${err.message}). Usa <b>Manual</b> o el botón de acelerar.`);
     }
-  },{enableHighAccuracy:true,maximumAge:1500,timeout:30000});
+    diag('error de ubicación código '+err.code+': '+err.message);
+  };
+  armarWatch();
 
   // Siembra inmediata: una posición aunque sea de hace unos segundos, para no
   // quedarnos sin nada mientras el receptor engancha.
@@ -1196,8 +1209,48 @@ function startSpeedSource(){
       setStatus('El GPS no ha dado ninguna lectura en 15 s. Comprueba el permiso de ubicación, o usa <b>Manual</b>.');
   }, 15000);
 }
+// Diagnóstico de ubicación: dice en pantalla por qué no hay lecturas.
+async function diagGPS(){
+  const partes=[];
+  partes.push('contexto seguro: '+(window.isSecureContext?'sí':'NO (hace falta https)'));
+  try{
+    if(navigator.permissions && navigator.permissions.query){
+      const p=await navigator.permissions.query({name:'geolocation'});
+      partes.push('permiso de ubicación: '+({granted:'concedido',denied:'DENEGADO',prompt:'pendiente de aceptar'}[p.state]||p.state));
+    } else partes.push('permiso: no consultable en este navegador');
+  }catch(e){ partes.push('permiso: no consultable'); }
+  diag(partes.join(' · '));
+}
+
+// Engancha (o reengancha) el seguimiento de ubicación sin perder la velocidad
+// que ya teníamos. iOS a veces deja de mandar posiciones sin dar ningún error.
+function armarWatch(){
+  if(!navigator.geolocation || !S.onPos) return;
+  if(S.watchId!=null){ try{ navigator.geolocation.clearWatch(S.watchId); }catch(e){} }
+  S.watchId=navigator.geolocation.watchPosition(p=>S.onPos(p), e=>S.onErr(e),
+    {enableHighAccuracy:true,maximumAge:1500,timeout:30000});
+  S.armadoT=performance.now()/1000;
+}
+
+// Vigilante: cada segundo comprueba que el GPS sigue vivo y que el audio no
+// se ha quedado suspendido (llamadas, cambio de salida a CarPlay/Bluetooth,
+// pantalla tapada...). Si algo se ha caído, lo vuelve a levantar solo.
+setInterval(()=>{
+  if(!S.on) return;
+  if(ctx && ctx.state!=='running'){ ctx.resume().catch(()=>{}); }
+  if(S.mode==='gps' && navigator.geolocation && S.onPos){
+    const ahora=performance.now()/1000;
+    const ult=Math.max(S.gps.t||0, S.armadoT||0);
+    if(ahora-ult>5){
+      S.rearmes++; armarWatch();
+      diag('GPS sin lecturas en 5 s: reenganchado automáticamente ('+S.rearmes+')');
+    }
+  }
+},1000);
+
 function stopSpeedSource(){
   if(S.watchId!=null){ navigator.geolocation.clearWatch(S.watchId); S.watchId=null; }
+  S.onPos=null; S.onErr=null;
   S.gps={t:0,v:0,a:0,hz:0,lat:null,lon:null};
 }
 
@@ -1225,7 +1278,10 @@ $('#test').onclick=async()=>{
 let wl=null;
 async function requestWakeLock(){ try{ if('wakeLock' in navigator) wl=await navigator.wakeLock.request('screen'); }catch(e){} }
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&S.on){ ctx&&ctx.resume(); requestWakeLock(); }
+  if(document.visibilityState==='visible'&&S.on){
+    ctx&&ctx.resume(); requestWakeLock();
+    if(S.mode==='gps') armarWatch();
+  }
 });
 </script>
 </body>
