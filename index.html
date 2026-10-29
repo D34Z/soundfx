@@ -250,9 +250,14 @@ const ENGINES = [
   { id:'hemi57', code:'5.7', desc:'HEMI de 5.7 — empuje grave', fire:FIRE.v8cross,
     idle:680, redline:6000, pipe:[96,110], fb:.76, damp:.17, decay:.0048, drive:2.5, tone:1400,
     intake:.11, bark:1.25, pop:.012, gr:1.6, ar:0.35, tq:{rP:.38,wLo:.66,wHi:.92,low:.50,rLow:.18} },
-  { id:'hemi64', code:'392', desc:'HEMI de 6.4 atmosférico', fire:FIRE.v8cross,
-    idle:720, redline:6400, pipe:[100,116], fb:.75, damp:.18, decay:.0044, drive:2.8, tone:1700,
-    intake:.13, bark:1.35, pop:.02, gr:1.7, ar:0.40, jit:0.22, tq:{rP:.45,wLo:.64,wHi:.88,low:.46,rLow:.20} },
+  { id:'hemi64', code:'GT500', desc:'V8 big block de carburador, años 70', fire:FIRE.v8cross,
+    idle:650, redline:5800, pipe:[74,86], fb:.68, damp:.17, decay:.0058, drive:1.9, tone:950,
+    intake:.16, bark:.90, pop:.035, cam:.35, gr:2.0, ar:0.6, jit:0.30,
+    tq:{rP:.36,wLo:.62,wHi:.86,low:.50,rLow:.16} },
+  { id:'s65', code:'M3', desc:'4.0 V8 S65 del M3 E92 — 8.400 rpm', fire:FIRE.v8cross,
+    idle:750, redline:8400, pipe:[178,210], fb:0.731, damp:0.300, decay:0.00275, drive:1.75, tone:1273, tr:4.07,
+    intake:.10, bark:1.20, pop:.025, jit:0.10, gr:5.68, ar:1.30,
+    tq:{rP:.55,wLo:.50,wHi:.75,low:.35,rLow:.20} },
   { id:'hellcat', code:'HELLCAT', desc:'6.2 sobrealimentado — con chirrido', fire:FIRE.v8cross,
     idle:750, redline:6200, pipe:[94,108], fb:.78, damp:.17, decay:.0046, drive:3.0, tone:1600,
     intake:.20, bark:1.45, pop:.015, blower:7.2, gr:1.7, ar:0.45, jit:0.22, tq:{rP:.52,wLo:.72,wHi:.86,low:.52,rLow:.16} },
@@ -263,16 +268,18 @@ const ENGINES = [
     idle:950, redline:8000, pipe:[150,172], fb:.68, damp:.30, decay:.0026, drive:3.1, tone:2600, intake:.09, bark:1.00 , gr:1.6, ar:0.40, jit:0.20, tq:{rP:.62,wLo:.58,wHi:.72,low:.30,rLow:.34}},
   { id:'v12', code:'V12', desc:'V12 atmosférico de superdeportivo', fire:FIRE.v12,
     idle:1000, redline:8500, pipe:[316,399], fb:0.545, damp:0.483, decay:0.00535, drive:2.40, tone:5200, intake:.07, bark:1.15 , gr:6.11, ar:2.57, jit:0.19, tq:{rP:.70,wLo:.62,wHi:.66,low:.28,rLow:.34}},
-  { id:'v10', code:'V10', desc:'Grito metálico de diez', fire:FIRE.v10,
-    idle:900, redline:8000, pipe:[118,131], fb:.66, damp:.46, decay:.0021, drive:2.9, tone:5000, intake:.08, bark:.95 , gr:1.9, ar:1.7, tq:{rP:.68,wLo:.58,wHi:.68,low:.26,rLow:.34}},
+  { id:'v10', code:'V10', desc:'V10 atmosférico de 8.700 rpm', fire:FIRE.v10,
+    idle:900, redline:8700, pipe:[259,300], fb:0.663, damp:0.229, decay:0.00164, drive:2.15, tone:3635, tr:2.24,
+    intake:.08, bark:1.08, pop:.02, jit:0.16, gr:1.47, ar:0.98,
+    tq:{rP:.68,wLo:.58,wHi:.68,low:.26,rLow:.34} },
   { id:'v6', code:'RS4', desc:'2.7 V6 biturbo — grave y contenido', fire:FIRE.v6,
     idle:760, redline:7200, pipe:[68,76], fb:.74, damp:.30, decay:.0036, drive:2.5, tone:2400,
     intake:.12, bark:1.12, pop:.010, jit:0.19, gr:2.2, ar:1.5,
     tq:{rP:.40,wLo:.34,wHi:.72,low:.26,rLow:.24} },
-  { id:'i6', code:'RB26', desc:'2.6 seis en línea — GT-R', fire:FIRE.i6,
-    idle:850, redline:8000, pipe:[244,273], fb:.70, damp:.34, decay:.0028, drive:3.6, tone:13000,
-    intake:.10, bark:.88, pop:.006, jit:0.13, gr:5.0, ar:1.6,
-    tq:{rP:.55,wLo:.38,wHi:.66,low:.20,rLow:.30} },
+  { id:'i6', code:'B58', desc:'3.0 seis en línea turbo de BMW', fire:FIRE.i6,
+    idle:700, redline:7000, pipe:[161,162], fb:.442, damp:.270, decay:.0063, drive:1.57, tone:9563,
+    intake:.08, bark:1.45, pop:.045, jit:0.21, gr:4.54, ar:1.95,
+    tq:{rP:.34,wLo:.24,wHi:1.00,low:.45,rLow:.14} },
   { id:'i4t', code:'K6A', desc:'Tres cilindros de kei car muy revolucionado', fire:FIRE.i4,
     idle:850, redline:8500, pipe:[244,273], fb:.72, damp:.55, decay:.0030, drive:3.6, tone:13000,
     intake:.12, bark:1.00, pop:.012, gr:6.5, ar:1.6, jit:0.26, tq:{rP:.26,wLo:.20,wHi:.54,low:.16,rLow:.20} },
@@ -284,9 +291,10 @@ const ENGINES = [
     idle:900, redline:9000, pipe:[152,152], fb:.620, damp:.400, decay:.00620, drive:2.90, tone:6000,
     intake:.20, bark:1.15, pop:.03, cam:.55, jit:.24, gr:3.00, ar:1.60,
     tq:{rP:.72,wLo:.50,wHi:.62,low:.20,rLow:.44} },
-  { id:'tcr', code:'TCR', desc:'2.0 turbo de tracción delantera', fire:FIRE.i4,
-    idle:800, redline:6800, pipe:[92,92], fb:.75, damp:.30, decay:.0034, drive:3.0, tone:2900,
-    intake:.16, bark:1.15, pop:.055, gr:2.4, ar:2.0, jit:0.28, tq:{rP:.30,wLo:.22,wHi:.58,low:.20,rLow:.22} },
+  { id:'tcr', code:'TCR', desc:'2.0 TSI turbo del Golf GTI TCR', fire:FIRE.i4,
+    idle:850, redline:7400, pipe:[253,281], fb:0.562, damp:0.527, decay:0.00386, drive:2.40, tone:4726, tr:1.52,
+    intake:.12, bark:0.95, pop:.055, jit:0.14, gr:2.62, ar:2.94,
+    tq:{rP:.30,wLo:.22,wHi:.58,low:.20,rLow:.22} },
 ];
 
 /* ===========================================================
@@ -462,7 +470,11 @@ class EngineCore{
       // quitar continua, saturar y filtrar el silenciador
       this.dcx += (sum-this.dcx)*0.0016; sum-=this.dcx;
       let y=sum*drive; y=y/(1+Math.abs(y));
-      const cut=1-Math.exp(-2*Math.PI*((e.tone||3000)*(0.35+this.thr*0.75)+400)/sr);
+      // Con e.tr el silenciador se abre al subir de vueltas: los pulsos son más
+      // cortos y el sonido gana brillo. Sin e.tr, igual que antes (los demás
+      // motores no cambian).
+      const fc=Math.min(0.45*sr, ((e.tone||3000)*(0.35+this.thr*0.75)+400)*(1+(e.tr||0)*Math.min(1,this.rpm/e.redline)));
+      const cut=1-Math.exp(-2*Math.PI*fc/sr);
       this.tone += (y-this.tone)*cut;
       this.tone2 += (this.tone-this.tone2)*cut;
       let o=this.tone2*this.gain*1.7;
@@ -556,8 +568,34 @@ const S={ on:false, engine:ENGINES[0], mode:'gps', speed:0, targetSpeed:0, prevS
 
 let ctx=null, node=null, outGain=null, core=null, useWorklet=false, lopeP=0;
 
+// iOS: con el interruptor de silencio activado, el audio web se silencia
+// salvo que la página declare que reproduce contenido. Dos mecanismos: la API
+// moderna de sesión de audio y, para versiones anteriores, un audio HTML
+// silencioso en bucle arrancado en el mismo toque.
+let audioSilencio=null;
+function desbloquearAudioIOS(){
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+  try{
+    if(!audioSilencio){
+      // WAV de 0,5 s de silencio generado en memoria, sin archivos externos
+      const sr=8000, n=sr/2, b=new ArrayBuffer(44+n*2), v=new DataView(b);
+      const w=(o,t)=>{for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i));};
+      w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt ');
+      v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+      v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true);
+      v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+      audioSilencio=new Audio(URL.createObjectURL(new Blob([b],{type:'audio/wav'})));
+      audioSilencio.loop=true; audioSilencio.setAttribute('playsinline','');
+      audioSilencio.volume=0.01;
+    }
+    const p=audioSilencio.play(); if(p&&p.catch) p.catch(()=>{});
+  }catch(e){}
+}
+
 async function buildAudio(){
   ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
+  // Reanudar YA, todavía dentro del toque: tras un await iOS puede negarse
+  try{ ctx.resume(); }catch(e){}
   outGain=ctx.createGain(); outGain.gain.value=0;
   const comp=ctx.createDynamicsCompressor();
   comp.threshold.value=-10; comp.knee.value=18; comp.ratio.value=8; comp.attack.value=.003; comp.release.value=.15;
@@ -1034,6 +1072,8 @@ power.onclick=async()=>{
   if(!S.on){
     try{
       power.textContent='…';
+      desbloquearAudioIOS();
+      if(ctx){ try{ ctx.resume(); }catch(e){} }
       if(!ctx) await buildAudio();
       await ctx.resume();
       if(ctx.state!=='running') diag('el navegador mantiene el audio suspendido (estado '+ctx.state+')');
@@ -1050,6 +1090,7 @@ power.onclick=async()=>{
     outGain.gain.setTargetAtTime(0,ctx.currentTime,.1);
     setTimeout(()=>{ if(!S.on) ctx.suspend(); },400);
     stopSpeedSource(); setStatus('Audio parado.');
+    try{ audioSilencio && audioSilencio.pause(); }catch(e){}
   }
 };
 
@@ -1262,6 +1303,7 @@ document.addEventListener('pointerdown',()=>{ if(ctx&&ctx.state==='suspended') c
 // Prueba de salida: un tono puro por la ruta mas simple posible.
 $('#test').onclick=async()=>{
   try{
+    desbloquearAudioIOS();
     if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
     await ctx.resume();
     const o=ctx.createOscillator(), g=ctx.createGain();
